@@ -37,7 +37,7 @@ async function gitSyncMiddleware(req, res, next) {
     }
 
     // 拉取远程更新
-    await git.pull('origin', 'main', {'--rebase': 'true'});
+    await git.pull('origin', 'main');
     
     // 推送本地更改到远程
     await git.push('origin', 'main');

@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "npx serve .",
-    "build": "echo 'No build step'"
+    "start": "npx serve .",
+    "build": "npm install && npx serve build",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@vercel/edge": "^0.1.2",
@@ -12,6 +14,9 @@
   },
   "devDependencies": {
     "serve": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "main": "middleware.js",
   "keywords": [],
