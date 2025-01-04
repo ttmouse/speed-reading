@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .reader-container {
+    @apply max-w-4xl mx-auto bg-white p-6 rounded-lg shadow;
+  }
+
+  .controls {
+    @apply flex gap-4 items-center mb-4;
+  }
+
+  .text-display {
+    @apply h-24 flex items-center justify-center text-3xl border rounded-lg my-4;
+  }
+
+  .stats {
+    @apply text-sm text-gray-600 space-x-4;
+  }
+
+  .setting-item {
+    @apply flex items-center gap-2;
+  }
+} 
