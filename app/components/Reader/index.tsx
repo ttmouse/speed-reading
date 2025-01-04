@@ -1,9 +1,9 @@
 'use client'
 
-import * as React from 'react';
+import React from 'react';
 import { useReader } from '@/app/hooks/useReader';
-import { SettingsPanel } from '@/app/components/SettingsPanel';
-import { ReadingSettings } from '@/app/types';
+import { SettingsPanel } from '../SettingsPanel';
+import { Display } from './Display';
 
 export default function Reader(): JSX.Element {
   const {
@@ -14,6 +14,7 @@ export default function Reader(): JSX.Element {
     isPlaying,
     stats,
     settings,
+    state,
     handleTextChange,
     handleSpeedChange,
     handleChunkSizeChange,
@@ -72,19 +73,7 @@ export default function Reader(): JSX.Element {
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div 
-          className="text-display w-full h-32 flex items-center justify-center border rounded-lg mb-8"
-          style={{
-            fontSize: `${settings.fontSize}px`,
-            color: settings.fontColor,
-            backgroundColor: settings.bgColor,
-            textAlign: settings.textAlign as 'left' | 'center' | 'right'
-          }}
-        >
-          {display}
-        </div>
-      </div>
+      <Display settings={settings} state={state} display={display} />
 
       <div className="mt-8">
         <textarea

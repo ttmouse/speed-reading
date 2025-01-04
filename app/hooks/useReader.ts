@@ -1,7 +1,13 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { ReadingSettings, ReadingState, ReadingStats, UseReaderReturn } from '@/app/types';
+import type { 
+  ReadingSettings, 
+  ReadingState, 
+  ReadingStats, 
+  UseReaderReturn, 
+  UseReaderProps 
+} from '@/app/types';
 import { 
   DEFAULT_TEXT,
   SPEED_STEP,
@@ -10,6 +16,11 @@ import {
   MIN_CHUNK_SIZE,
   MAX_CHUNK_SIZE 
 } from '@/app/constants/reader';
+import { useTextProcessor } from '@/app/hooks/useTextProcessor';
+import { useReadingStats } from '@/app/hooks/useReadingStats';
+import { useKeyboardControls } from '@/app/hooks/useKeyboardControls';
+import { useReadingTimer } from '@/app/hooks/useReadingTimer';
+import { splitTextIntoChunks } from '../utils/textProcessor';
 
 export const DEFAULT_SETTINGS: ReadingSettings = {
   // 基础设置
@@ -31,10 +42,11 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   lineSpacing: 1.5,
   
   // Highlight 模式设置
-  highlightSize: 3,
   contextLines: 2,
-  highlightColor: '#FFD700',
-  dimmedTextColor: '#808080',
+  highlightColor: '#FFFFFF',
+  dimmedTextColor: '#666666',
+  highlightStyle: 'scroll',
+  pageSize: 5,
   
   // 通用设置
   autoProgress: true,
@@ -43,45 +55,60 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   pauseAtBreaks: true,
   skipStopwords: false,
   stopwords: ['的', '了', '着', '和', '与', '及', '或'],
-  
-  // 视觉辅助
   showProgress: true,
+  focusPoint: 'center',
+  highlightFocus: false,
+  subvocalizationReminder: false,
+  regressionControl: false,
+  eyeMovementGuide: false,
   
   // 字体设置
-  fontFamily: 'Microsoft YaHei',
+  fontFamily: 'LXGWWenKaiGB',
   fontWeight: 400,
   letterSpacing: 0,
   lineHeight: 1.5,
   
+  // 显示设置
+  showFocusPoint: false,
+  focusPointColor: '#FF0000',
+  focusPointSize: 4,
+  previewNextWord: false,
+  showContext: false,
+  
+  // 声音设置
+  soundEnabled: false,
+  soundVolume: 50,
+  soundType: 'none',
+  
   // 统计设置
   trackStats: true,
   showInstantWPM: true,
-  showAccuracy: false
+  showAccuracy: false,
+  charsPerLine: 20
 };
-
-interface UseReaderProps {
-  onSettingsClick?: () => void;
-}
 
 export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderReturn {
   const [settings, setSettings] = useState<ReadingSettings>(DEFAULT_SETTINGS);
-
   const [state, setState] = useState<ReadingState>({
-    text: DEFAULT_TEXT,  // 使用默认文本
+    text: DEFAULT_TEXT,
     currentPosition: 0,
     isPlaying: false,
+    isPaused: false,
     display: '准备开始',
-    chunks: []
+    chunks: [],
+    setCurrentPosition: (position: number) => {
+      setState(prev => ({
+        ...prev,
+        currentPosition: position,
+        display: prev.chunks[position] || '完成'
+      }));
+    }
   });
 
-  const [stats, setStats] = useState<ReadingStats>({
-    wordsRead: 0,
-    currentWpm: 0,
-    timeRemaining: '0:00'
-  });
-
-  const timerRef = useRef<NodeJS.Timeout>();
-  const startTimeRef = useRef<number>(0);
+  // 使用拆分后的 hooks
+  const { splitIntoChunks } = useTextProcessor(settings);
+  const { timerRef, startTimeRef, updateInterval } = useReadingTimer();
+  const { stats, updateStats } = useReadingStats({ state, settings, startTimeRef });
 
   const handleTextChange = useCallback((text: string) => {
     setState(prev => ({ ...prev, text }));
@@ -95,72 +122,11 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     setSettings(prev => ({ ...prev, chunkSize }));
   }, []);
 
-  const updateStats = useCallback((): void => {
-    const elapsedSeconds = (Date.now() - startTimeRef.current) / 1000;
-    if (elapsedSeconds <= 0) return;
-    
-    const currentWpm = Math.round((state.currentPosition / elapsedSeconds) * 60);
-    const remainingWords = state.chunks.length - state.currentPosition;
-    
-    // 使用当前速度或设置速度中的较大值来计算
-    const effectiveWpm = Math.max(currentWpm || settings.speed, settings.speed);
-    
-    // 计算剩余时间（分钟）
-    const remainingTime = remainingWords / effectiveWpm;
-    const totalSeconds = Math.max(0, remainingTime * 60); // 转换为秒并确保不为负
-    
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = Math.floor(totalSeconds % 60);
-
-    setStats({
-      wordsRead: state.currentPosition,
-      currentWpm: currentWpm || 0,
-      timeRemaining: `${minutes}:${seconds.toString().padStart(2, '0')}`
-    });
-  }, [state.currentPosition, state.chunks.length, settings.speed]);
-
-  const splitIntoChunks = useCallback((text: string, size: number) => {
-    const chunks: string[] = [];
-    const sentences = text.split(/([。！？.!?])/);
-    let current = '';
-
-    for (let i = 0; i < sentences.length; i++) {
-      const sentence = sentences[i];
-      for (let char of sentence) {
-        if (char.trim() === '') continue;
-        if (settings.skipStopwords && settings.stopwords.includes(char)) continue;
-        
-        current += char;
-        if (current.length >= size) {
-          chunks.push(current);
-          current = '';
-        }
-      }
-
-      // 处理句末标点
-      if (/[。！？.!?]/.test(sentence)) {
-        if (current) {
-          chunks.push(current + sentence);
-          current = '';
-        } else {
-          chunks[chunks.length - 1] += sentence;
-        }
-
-        // 句末停顿
-        if (settings.pauseAtBreaks) {
-          chunks.push('');  // 添加空块来创造停顿
-        }
-      }
-    }
-    if (current) chunks.push(current);
-    return chunks;
-  }, [settings.skipStopwords, settings.stopwords, settings.pauseAtBreaks]);
-
   const showNextChunk = useCallback(() => {
     setState(prev => {
-      if (prev.currentPosition >= prev.chunks.length) {
+      if (prev.isPaused || prev.currentPosition >= prev.chunks.length) {
         clearInterval(timerRef.current);
-        return { ...prev, isPlaying: false, display: '完成' };
+        return { ...prev, isPlaying: false, display: prev.currentPosition >= prev.chunks.length ? '完成' : prev.display };
       }
 
       const chunk = prev.chunks[prev.currentPosition];
@@ -171,39 +137,71 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       };
     });
     updateStats();
-  }, [updateStats]);
+  }, [updateStats, timerRef]);
 
   const startReading = useCallback(() => {
     if (!state.text) return;
     
-    const chunks = splitIntoChunks(state.text, settings.chunkSize);
-    startTimeRef.current = Date.now();
+    const chunks = state.chunks.length > 0 ? state.chunks : splitIntoChunks(state.text, settings.chunkSize);
+    const now = Date.now();
+    startTimeRef.current = now;
     setState(prev => ({ 
       ...prev, 
       isPlaying: true,
+      isPaused: false,
       chunks,
-      currentPosition: 0
+      currentPosition: prev.chunks.length > 0 ? prev.currentPosition : 0
     }));
     
-    const getInterval = (chunk: string) => {
+    const getInterval = (position: number) => {
       let interval = 60000 / settings.speed;
+
+      // 在分页模式下，每页第一行增加停留时间
+      if (settings.readingMode === 'highlight' && 
+          settings.highlightStyle === 'page' && 
+          position % settings.pageSize === 0) {
+        interval *= 1.5; // 增加 50% 的停留时间
+      }
+
+      // 原有的速度变化逻辑
       if (settings.speedVariability) {
+        const chunk = chunks[position] || '';
         const factor = Math.max(0.5, Math.min(2, chunk.length / settings.chunkSize));
         interval *= factor;
       }
+
       return interval;
     };
 
-    const initialInterval = getInterval(chunks[0]);
+    const currentChunk = chunks[state.currentPosition] || chunks[0];
+    const initialInterval = getInterval(state.currentPosition);
     timerRef.current = setInterval(showNextChunk, initialInterval);
-  }, [settings, state.text, splitIntoChunks, updateStats, showNextChunk]);
+
+    // 更新计时器间隔的函数
+    const updateTimer = () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        const newInterval = getInterval(state.currentPosition);
+        timerRef.current = setInterval(showNextChunk, newInterval);
+      }
+    };
+
+    // 监听位置变化，更新计时器间隔
+    const unsubscribe = () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+
+    return unsubscribe;
+  }, [settings, state.text, state.chunks, state.currentPosition, splitIntoChunks, showNextChunk, timerRef, startTimeRef]);
 
   const pauseReading = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-    setState(prev => ({ ...prev, isPlaying: false }));
-  }, []);
+    setState(prev => ({ ...prev, isPlaying: false, isPaused: true }));
+  }, [timerRef]);
 
   const resetAll = useCallback(() => {
     if (timerRef.current) {
@@ -214,18 +212,20 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       text: '',
       currentPosition: 0,
       isPlaying: false,
+      isPaused: false,
       display: '准备开始',
-      chunks: []
-    });
-    
-    setStats({
-      wordsRead: 0,
-      currentWpm: 0,
-      timeRemaining: '0:00'
+      chunks: [],
+      setCurrentPosition: (position: number) => {
+        setState(prev => ({
+          ...prev,
+          currentPosition: position,
+          display: prev.chunks[position] || '完成'
+        }));
+      }
     });
     
     startTimeRef.current = 0;
-  }, []);
+  }, [timerRef, startTimeRef]);
 
   const resetReading = useCallback(() => {
     if (timerRef.current) {
@@ -236,132 +236,33 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       ...prev,
       currentPosition: 0,
       isPlaying: false,
-      display: '准备开始',
+      isPaused: false,
+      display: '准备开始'
     }));
     
-    setStats({
-      wordsRead: 0,
-      currentWpm: 0,
-      timeRemaining: '0:00'
-    });
-    
     startTimeRef.current = 0;
-  }, []);
+  }, [timerRef, startTimeRef]);
 
   const handleSpeedAdjustment = useCallback((delta: number) => {
     const newSpeed = settings.speed + delta;
     if (newSpeed >= MIN_SPEED && newSpeed <= MAX_SPEED) {
       handleSpeedChange(newSpeed);
-      updateInterval(newSpeed);
+      updateInterval(newSpeed, showNextChunk);
     }
-  }, [settings.speed, handleSpeedChange]);
+  }, [settings.speed, handleSpeedChange, updateInterval, showNextChunk]);
 
   const handleChunkSizeAdjustment = useCallback((delta: number) => {
     const newSize = settings.chunkSize + delta;
     if (newSize >= MIN_CHUNK_SIZE && newSize <= MAX_CHUNK_SIZE) {
       handleChunkSizeChange(newSize);
-      updateChunks(newSize);
+      const newChunks = splitIntoChunks(state.text, newSize);
+      setState(prev => ({
+        ...prev,
+        chunks: newChunks,
+        display: newChunks[prev.currentPosition] || '完成'
+      }));
     }
-  }, [settings.chunkSize, handleChunkSizeChange]);
-
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    switch(e.key.toLowerCase()) {
-      case 'n':
-        resetAll();
-        break;
-      case 'r':
-        resetReading();
-        break;
-      case ' ':
-        e.preventDefault();
-        if (state.isPlaying) {
-          pauseReading();
-        } else {
-          startReading();
-        }
-        break;
-      case 'arrowup':
-        e.preventDefault();
-        handleSpeedAdjustment(SPEED_STEP);
-        break;
-      case 'arrowdown':
-        e.preventDefault();
-        handleSpeedAdjustment(-SPEED_STEP);
-        break;
-      case 'arrowleft':
-        e.preventDefault();
-        if (settings.chunkSize > 1) {
-          handleChunkSizeChange(settings.chunkSize - 1);
-          // 如果正在播放，只重新分割剩余文本
-          if (state.isPlaying) {
-            const remainingText = state.text.slice(state.currentPosition);
-            const newChunks = splitIntoChunks(remainingText, settings.chunkSize - 1);
-            setState(prev => ({
-              ...prev,
-              chunks: [...prev.chunks.slice(0, prev.currentPosition), ...newChunks]
-            }));
-          }
-        }
-        break;
-      case 'arrowright':
-        e.preventDefault();
-        if (settings.chunkSize < 20) {
-          handleChunkSizeChange(settings.chunkSize + 1);
-          // 如果正在播放，只重新分割剩余文本
-          if (state.isPlaying) {
-            const remainingText = state.text.slice(state.currentPosition);
-            const newChunks = splitIntoChunks(remainingText, settings.chunkSize + 1);
-            setState(prev => ({
-              ...prev,
-              chunks: [...prev.chunks.slice(0, prev.currentPosition), ...newChunks]
-            }));
-          }
-        }
-        break;
-      case 's':
-        if (onSettingsClick) {
-          onSettingsClick();
-        }
-        break;
-    }
-  }, [
-    state.isPlaying,
-    state.currentPosition,
-    state.text,
-    settings.speed,
-    settings.chunkSize,
-    pauseReading,
-    resetReading,
-    resetAll,
-    startReading,
-    handleSpeedChange,
-    handleChunkSizeChange,
-    onSettingsClick,
-    splitIntoChunks,
-    showNextChunk,
-    handleSpeedAdjustment,
-    SPEED_STEP
-  ]);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
-
-  const updateSettings = useCallback((updates: Partial<ReadingSettings>) => {
-    setSettings(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  const updateInterval = useCallback((newSpeed: number) => {
-    if (state.isPlaying && timerRef.current) {
-      clearInterval(timerRef.current);
-      const interval = 60000 / newSpeed;
-      timerRef.current = setInterval(showNextChunk, interval);
-    }
-  }, [state.isPlaying, showNextChunk]);
+  }, [settings.chunkSize, handleChunkSizeChange, state.text, splitIntoChunks]);
 
   const updateChunks = useCallback((newSize: number) => {
     if (state.isPlaying) {
@@ -374,6 +275,37 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     }
   }, [state.isPlaying, state.text, state.currentPosition, splitIntoChunks]);
 
+  const updateSettings = useCallback((updates: Partial<ReadingSettings>) => {
+    setSettings(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const processText = useCallback((text: string) => {
+    if (!text) return [];
+    return splitTextIntoChunks(text, settings.chunkSize);
+  }, [settings.chunkSize]);
+
+  // 使用键盘控制 hook
+  const { handleKeyDown } = useKeyboardControls({
+    state,
+    settings,
+    onSpeedAdjust: handleSpeedAdjustment,
+    onChunkSizeAdjust: handleChunkSizeAdjustment,
+    onStart: startReading,
+    onPause: pauseReading,
+    onReset: resetReading,
+    onResetAll: resetAll,
+    onSettingsClick
+  });
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [timerRef]);
+
   return {
     text: state.text,
     speed: settings.speed,
@@ -382,6 +314,7 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     isPlaying: state.isPlaying,
     stats,
     settings,
+    state,
     handleTextChange,
     handleSpeedChange,
     handleChunkSizeChange,

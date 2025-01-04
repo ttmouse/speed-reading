@@ -171,124 +171,56 @@ export function SettingsPanel({ settings, onUpdate, onClose, visible }: Settings
           </div>
 
           <div className="preference-item border-t pt-4">
-            <h3 className="font-bold mb-3">Reading Mode</h3>
+            <h3 className="font-bold mb-3">阅读模式</h3>
             <select 
               value={settings.readingMode}
               onChange={e => onUpdate({ readingMode: e.target.value as 'serial' | 'highlight' })}
-              className="w-full p-2 border rounded mb-4"
+              className="w-full p-2 border rounded mb-2"
             >
-              <option value="serial">Serial</option>
-              <option value="highlight">Highlight</option>
+              <option value="serial">串行模式</option>
+              <option value="highlight">高亮模式</option>
             </select>
 
-            {settings.readingMode === 'serial' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Number of Lines ({settings.numberOfLines})
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="3"
-                    value={settings.numberOfLines}
-                    onChange={e => onUpdate({ numberOfLines: Number(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Words Per Line ({settings.wordsPerLine})
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    value={settings.wordsPerLine}
-                    onChange={e => onUpdate({ wordsPerLine: Number(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.centerText}
-                    onChange={e => onUpdate({ centerText: e.target.checked })}
-                    className="mr-2"
-                  />
-                  <span className="text-sm">Center Text</span>
-                </label>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Line Spacing ({settings.lineSpacing})
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="3"
-                    step="0.5"
-                    value={settings.lineSpacing}
-                    onChange={e => onUpdate({ lineSpacing: Number(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            )}
-
             {settings.readingMode === 'highlight' && (
-              <div className="space-y-4">
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">显示方式</label>
+                  <select
+                    value={settings.highlightStyle}
+                    onChange={e => onUpdate({ highlightStyle: e.target.value as 'scroll' | 'page' })}
+                    className="w-full p-2 border rounded mb-2"
+                  >
+                    <option value="scroll">滚动式</option>
+                    <option value="page">分页式</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Highlight Size ({settings.highlightSize})
+                    {settings.highlightStyle === 'scroll' ? '上下文行数' : '每页行数'} 
+                    ({settings.highlightStyle === 'scroll' ? settings.contextLines : settings.pageSize})
                   </label>
                   <input
                     type="range"
-                    min="1"
-                    max="5"
-                    value={settings.highlightSize}
-                    onChange={e => onUpdate({ highlightSize: Number(e.target.value) })}
+                    min={settings.highlightStyle === 'scroll' ? 0 : 3}
+                    max={settings.highlightStyle === 'scroll' ? 5 : 10}
+                    value={settings.highlightStyle === 'scroll' ? settings.contextLines : settings.pageSize}
+                    onChange={e => onUpdate({ 
+                      [settings.highlightStyle === 'scroll' ? 'contextLines' : 'pageSize']: Number(e.target.value) 
+                    })}
                     className="w-full"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Context Lines ({settings.contextLines})
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="5"
-                    value={settings.contextLines}
-                    onChange={e => onUpdate({ contextLines: Number(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Highlight Color
-                  </label>
-                  <input
-                    type="color"
-                    value={settings.highlightColor}
-                    onChange={e => onUpdate({ highlightColor: e.target.value })}
-                    className="w-full h-8 p-1 rounded"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Background Text Color
+                    背景文本颜色
                   </label>
                   <input
                     type="color"
                     value={settings.dimmedTextColor}
                     onChange={e => onUpdate({ dimmedTextColor: e.target.value })}
-                    className="w-full h-8 p-1 rounded"
+                    className="w-full h-8"
                   />
                 </div>
               </div>
