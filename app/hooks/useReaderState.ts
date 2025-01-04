@@ -7,9 +7,20 @@ export function useReaderState(defaultText: string) {
     text: defaultText,
     currentPosition: 0,
     isPlaying: false,
+    isPaused: false,
     display: '准备开始',
-    chunks: []
+    chunks: [],
+    setCurrentPosition: (position: number) => {
+      setState(prev => ({
+        ...prev,
+        currentPosition: position,
+        display: prev.chunks[position] || '完成'
+      }));
+    }
   });
-  
-  return { state, setState };
+
+  return {
+    state,
+    setState
+  };
 } 
