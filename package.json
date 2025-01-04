@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npx serve .",
-    "start": "npx serve .",
-    "build": "npm install && npx serve build",
+    "dev": "npx serve public",
+    "start": "npx serve public",
+    "build": "mkdir -p public && cp -r src/* public/",
     "vercel-build": "npm run build"
   },
   "dependencies": {
@@ -16,7 +16,7 @@
     "serve": "^14.0.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": "18.x"
   },
   "main": "middleware.js",
   "keywords": [],
