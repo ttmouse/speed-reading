@@ -7,9 +7,15 @@
     "build": "echo 'No build step'"
   },
   "dependencies": {
-    "@vercel/edge": "^0.1.2"
+    "@vercel/edge": "^0.1.2",
+    "simple-git": "^3.27.0"
   },
   "devDependencies": {
     "serve": "^14.0.0"
-  }
+  },
+  "main": "middleware.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
