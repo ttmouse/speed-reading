@@ -16,7 +16,6 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   pageSize: 5,           // 默认5行
   lineWidth: 20,         // 默认每行20字
   lineSpacing: 16,       // 默认16px行间距
-  blockSpacing: 8,       // 默认8px块间距
   textAreaWidth: 800,    // 默认800px宽度
   
   // 滚动模式设置

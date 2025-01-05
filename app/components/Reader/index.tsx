@@ -1,13 +1,18 @@
 'use client'
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { useReader } from '@/app/hooks/useReader';
-import { SettingsPanel } from '../SettingsPanel';
-import { Display } from './Display';
 import { Controls } from './Controls';
 import { SpeedControls } from './SpeedControls';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { StatsDisplay } from './StatsDisplay';
+import { Display } from './Display/index';
+
+// 动态导入SettingsPanel，禁用SSR
+const SettingsPanel = dynamic(() => import('../SettingsPanel'), {
+  ssr: false
+});
 
 export default function Reader(): JSX.Element {
   const {
@@ -26,7 +31,6 @@ export default function Reader(): JSX.Element {
     handleKeyDown
   } = useReader();
 
-  // 移除设置面板的显示状态管理，因为现在是固定显示的
   React.useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -34,7 +38,6 @@ export default function Reader(): JSX.Element {
     };
   }, [handleKeyDown]);
 
-  // 包装 updateSettings 函数以适配不同的接口
   const handleSettingChange = React.useCallback(
     (key: keyof typeof settings, value: any) => {
       updateSettings({ [key]: value });
@@ -45,8 +48,8 @@ export default function Reader(): JSX.Element {
   return (
     <div className="flex">
       {/* 主内容区域 */}
-      <div className="flex-1 p-4 pr-[340px]"> {/* 320px侧边栏 + 20px间距 */}
-        <div className="max-w-4xl mx-auto">
+      <div className="flex-1 p-4 pr-[340px]">
+        <div className="w-full">
           <Controls settings={settings} onSettingChange={handleSettingChange} />
           
           <SpeedControls

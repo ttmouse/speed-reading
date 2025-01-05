@@ -21,11 +21,12 @@ import { useReadingStats } from '@/app/hooks/useReadingStats';
 import { useKeyboardControls } from '@/app/hooks/useKeyboardControls';
 import { useReadingTimer } from '@/app/hooks/useReadingTimer';
 import { splitTextIntoChunks } from '../utils/textProcessor';
+import { loadSettings, saveSettings } from '../utils/storage';
 
 import { DEFAULT_SETTINGS } from '../constants/readerSettings';
 
 export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderReturn {
-  const [settings, setSettings] = useState<ReadingSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<ReadingSettings>(() => loadSettings());
   const [state, setState] = useState<ReadingState>({
     text: DEFAULT_TEXT,
     currentPosition: 0,
@@ -52,11 +53,19 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
   }, []);
 
   const handleSpeedChange = useCallback((speed: number) => {
-    setSettings(prev => ({ ...prev, speed }));
+    setSettings(prev => {
+      const newSettings = { ...prev, speed };
+      saveSettings(newSettings);
+      return newSettings;
+    });
   }, []);
 
   const handleChunkSizeChange = useCallback((chunkSize: number) => {
-    setSettings(prev => ({ ...prev, chunkSize }));
+    setSettings(prev => {
+      const newSettings = { ...prev, chunkSize };
+      saveSettings(newSettings);
+      return newSettings;
+    });
   }, []);
 
   const showNextChunk = useCallback(() => {
@@ -213,7 +222,11 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
   }, [state.isPlaying, state.text, state.currentPosition, splitIntoChunks]);
 
   const updateSettings = useCallback((updates: Partial<ReadingSettings>) => {
-    setSettings(prev => ({ ...prev, ...updates }));
+    setSettings(prev => {
+      const newSettings = { ...prev, ...updates };
+      saveSettings(newSettings);
+      return newSettings;
+    });
   }, []);
 
   const processText = useCallback((text: string) => {

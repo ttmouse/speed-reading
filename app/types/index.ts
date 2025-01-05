@@ -98,7 +98,6 @@ export interface ReadingSettings {
   pageSize: number;        // 每页行数
   lineWidth: number;       // 每行字数
   lineSpacing: number;     // 行间距（像素）
-  blockSpacing: number;    // 块间距（像素）
   textAreaWidth: number;   // 文本区域宽度（像素）
 
   // 滚动模式设置
