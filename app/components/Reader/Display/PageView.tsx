@@ -74,7 +74,7 @@ const PageViewComponent: React.FC<PageViewProps> = ({
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="w-full py-8 flex items-center justify-center">
       <div className="text-container" style={containerStyle}>
         <motion.div
           initial={{ opacity: 0 }}

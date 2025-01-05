@@ -20,13 +20,12 @@ export function Display({ settings, state, display }: DisplayProps) {
 
   // 基础容器样式
   const containerStyle = {
-    minHeight: '60vh',
     color: settings.fontColor,
     backgroundColor: settings.bgColor
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+    <div className="flex flex-col items-center justify-center">
       <div 
         className="text-display w-full border rounded-lg mb-8 overflow-hidden bg-white"
         style={containerStyle}
