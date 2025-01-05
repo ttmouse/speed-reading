@@ -103,120 +103,69 @@ function PageHighlight({
     );
   }
 
-  const lineHeight = 40;
+  // 1. 计算当前页
   const actualPageSize = settings?.pageSize || pageSize;
-  const containerHeight = lineHeight * actualPageSize;
-
-  // 构建带有位置信息的文本
-  const textWithPositions = chunks.reduce((acc, chunk, index) => {
-    return {
-      text: acc.text + chunk,
-      positions: [...acc.positions, {
-        start: acc.text.length,
-        end: acc.text.length + chunk.length,
-        index
-      }]
-    };
-  }, { text: '', positions: [] as Array<{ start: number; end: number; index: number }> });
-
-  // 将文本按行分割，并过滤掉空行
-  const allLines = textWithPositions.text.split('\n').filter(line => line.trim());
+  const chunkSize = settings?.chunkSize || 3; // 每行显示的分组数
+  const chunksPerPage = actualPageSize * chunkSize;
+  const currentPage = Math.floor(currentPosition / chunksPerPage);
   
-  // 计算分页相关的参数
-  const totalPages = Math.ceil(allLines.length / actualPageSize);
-  const currentPage = Math.min(
-    Math.floor(currentPosition / chunks.length * totalPages),
-    totalPages - 1
-  );
-  const startLine = currentPage * actualPageSize;
-  const currentPageLines = allLines.slice(startLine, startLine + actualPageSize);
-
-  // 补充空行到指定行数
-  while (currentPageLines.length < actualPageSize) {
-    currentPageLines.push('');
+  // 2. 获取当前页的文本块
+  const startChunkIndex = currentPage * chunksPerPage;
+  const pageChunks = chunks.slice(startChunkIndex, startChunkIndex + chunksPerPage);
+  
+  // 3. 将文本块分组到行
+  const lines: string[][] = [];
+  for (let i = 0; i < pageChunks.length; i += chunkSize) {
+    lines.push(pageChunks.slice(i, i + chunkSize));
+  }
+  
+  // 4. 补充空行到指定行数
+  while (lines.length < actualPageSize) {
+    lines.push(Array(chunkSize).fill(''));
   }
 
-  // 为每一行创建高亮信息
-  const lineHighlights = currentPageLines.map(line => {
-    if (!line) return [];
-    
-    const lineStart = textWithPositions.text.indexOf(line);
-    const lineEnd = lineStart + line.length;
-    
-    // 找出这一行包含的所有词组
-    const lineChunks = textWithPositions.positions.filter(pos => 
-      (pos.start >= lineStart && pos.start < lineEnd) || 
-      (pos.end > lineStart && pos.end <= lineEnd) ||
-      (pos.start <= lineStart && pos.end >= lineEnd)
-    );
-
-    // 为每个词组创建高亮信息
-    return lineChunks.map(chunk => ({
-      text: textWithPositions.text.slice(
-        Math.max(chunk.start, lineStart),
-        Math.min(chunk.end, lineEnd)
-      ),
-      isHighlighted: chunk.index <= currentPosition,
-      start: Math.max(chunk.start - lineStart, 0),
-      end: Math.min(chunk.end - lineStart, line.length)
-    }));
-  });
+  // 5. 计算当前页内的高亮位置
+  const currentChunkInPage = currentPosition % chunksPerPage;
 
   return (
-    <div className="flex flex-col items-start justify-start w-full h-full">
-      <div 
-        className="w-full relative"
-        style={{
-          height: `${containerHeight}px`
-        }}
-      >
+    <div className="flex flex-col items-start justify-start w-full h-full border rounded-lg overflow-hidden">
+      <div className="w-full h-full flex flex-col">
         <motion.div
-          className="w-full h-full"
+          className="flex-1 flex flex-col"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           key={currentPage}
-          transition={{
-            duration: 0.2
-          }}
+          transition={{ duration: 0.2 }}
         >
-          <div className="px-4 whitespace-pre-wrap text-left h-full flex flex-col">
-            {currentPageLines.map((line, lineIdx) => (
-              <div
-                key={lineIdx}
-                className="flex-1 flex items-center"
-                style={{
-                  color: dimmedTextColor,
-                  fontFamily: 'LXGWWenKaiGB'
-                }}
-              >
-                {line ? (
-                  lineHighlights[lineIdx].length === 0 ? (
-                    line
-                  ) : (
-                    <>
-                      {line.split('').map((char, charIdx) => {
-                        const highlight = lineHighlights[lineIdx].find(h => 
-                          charIdx >= h.start && charIdx < h.end
-                        );
-                        return (
-                          <span
-                            key={charIdx}
-                            style={{
-                              color: highlight?.isHighlighted ? highlightColor : dimmedTextColor,
-                              transition: 'color 0.2s ease'
-                            }}
-                          >
-                            {char}
-                          </span>
-                        );
-                      })}
-                    </>
-                  )
-                ) : null}
-              </div>
-            ))}
-          </div>
+          {lines.map((lineChunks, lineIdx) => (
+            <div
+              key={lineIdx}
+              className="flex-1 flex items-center px-4"
+              style={{
+                minHeight: '40px',
+                fontFamily: 'LXGWWenKaiGB',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-all'
+              }}
+            >
+              {lineChunks.map((chunk, chunkIdx) => {
+                const chunkPosition = lineIdx * chunkSize + chunkIdx;
+                return (
+                  <span
+                    key={chunkIdx}
+                    className="mx-1"
+                    style={{
+                      color: chunkPosition <= currentChunkInPage ? highlightColor : dimmedTextColor,
+                      transition: 'color 0.2s ease'
+                    }}
+                  >
+                    {chunk}
+                  </span>
+                );
+              })}
+            </div>
+          ))}
         </motion.div>
       </div>
     </div>

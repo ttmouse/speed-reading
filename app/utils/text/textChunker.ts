@@ -1,5 +1,13 @@
-export function splitTextIntoChunks(text: string, chunkSize: number): string[] {
+interface ChunkOptions {
+  chunkSize: number;
+  skipStopwords?: boolean;
+  stopwords?: string[];
+}
+
+export function splitTextIntoChunks(text: string, options: ChunkOptions): string[] {
   if (!text) return [];
+
+  const { chunkSize, skipStopwords = false, stopwords = [] } = options;
 
   // 首先按换行符分割文本，保留换行符
   const lines = text.split(/(\n)/);

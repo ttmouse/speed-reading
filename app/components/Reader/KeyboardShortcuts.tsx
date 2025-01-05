@@ -1,6 +1,8 @@
+'use client'
+
 import React from 'react';
 
-export function KeyboardShortcuts() {
+export function KeyboardShortcuts(): JSX.Element {
   return (
     <div className="keyboard-shortcuts mt-8 p-4 bg-gray-50 rounded text-sm text-center">
       快捷键：
@@ -14,4 +16,4 @@ export function KeyboardShortcuts() {
       <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">S</kbd> 设置
     </div>
   );
-} 
+}

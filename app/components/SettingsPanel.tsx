@@ -1,5 +1,5 @@
-import { ReadingSettings } from '@/app/types';
-import { DEFAULT_SETTINGS } from '@/app/hooks/useReader';
+import { ReadingSettings } from '../types';
+import { DEFAULT_SETTINGS } from '../constants/readerSettings';
 
 interface SettingsPanelProps {
   settings: ReadingSettings;
