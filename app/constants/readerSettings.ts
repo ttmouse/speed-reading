@@ -2,65 +2,36 @@ import type { ReadingSettings } from '../types';
 
 export const DEFAULT_SETTINGS: ReadingSettings = {
   // 基础设置
-  chunkSize: 4,
+  readingMode: 'highlight',
+  highlightStyle: 'page',
   speed: 300,
-  fontSize: 32,
+  chunkSize: 4,
+  fontSize: 24,
   fontColor: '#000000',
-  bgColor: '#FFFFFF',
-  textAlign: 'center',
+  bgColor: '#ffffff',
+  textAlign: 'left',
   windowSize: '800x600',
   
-  // 阅读模式设置
-  readingMode: 'serial' as const,
+  // 分页模式设置
+  pageSize: 5,           // 默认5行
+  lineWidth: 20,         // 默认每行20字
+  lineSpacing: 16,       // 默认16px行间距
+  blockSpacing: 8,       // 默认8px块间距
+  textAreaWidth: 800,    // 默认800px宽度
   
-  // Serial 模式设置
-  numberOfLines: 1,
-  wordsPerLine: 1,
-  centerText: true,
-  lineSpacing: 1.5,
-  
-  // Highlight 模式设置
+  // 滚动模式设置
   contextLines: 2,
-  highlightColor: '#FFFFFF',
   dimmedTextColor: '#666666',
-  highlightStyle: 'scroll',
-  pageSize: 5,
   
-  // 通用设置
-  autoProgress: true,
+  // 视觉辅助
+  focusPoint: 'left',
+  highlightFocus: true,
+  showProgress: true,
+  
+  // 高级设置
   speedVariability: false,
   sentenceBreak: true,
   pauseAtBreaks: true,
   skipStopwords: false,
-  stopwords: ['的', '了', '着', '和', '与', '及', '或'],
-  showProgress: true,
-  focusPoint: 'center',
-  highlightFocus: false,
-  subvocalizationReminder: false,
-  regressionControl: false,
-  eyeMovementGuide: false,
-  
-  // 字体设置
-  fontFamily: 'LXGWWenKaiGB',
-  fontWeight: 400,
-  letterSpacing: 0,
-  lineHeight: 1.5,
-  
-  // 显示设置
-  showFocusPoint: false,
-  focusPointColor: '#FF0000',
-  focusPointSize: 4,
-  previewNextWord: false,
-  showContext: false,
-  
-  // 声音设置
-  soundEnabled: false,
-  soundVolume: 50,
-  soundType: 'none',
-  
-  // 统计设置
-  trackStats: true,
-  showInstantWPM: true,
-  showAccuracy: false,
-  charsPerLine: 20
+  stopwords: []
 };

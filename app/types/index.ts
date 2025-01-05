@@ -82,16 +82,40 @@ export interface StatSettings {
 }
 
 // 完整设置接口
-export interface ReadingSettings extends 
-  BaseSettings,
-  SerialModeSettings,
-  HighlightModeSettings,
-  CommonSettings,
-  FontSettings,
-  DisplaySettings,
-  SoundSettings,
-  StatSettings {
+export interface ReadingSettings {
+  // 基础设置
   readingMode: ReadingMode;
+  highlightStyle: HighlightStyle;
+  speed: number;
+  chunkSize: number;
+  fontSize: number;
+  fontColor: string;
+  bgColor: string;
+  textAlign: string;
+  windowSize: string;
+
+  // 分页模式设置
+  pageSize: number;        // 每页行数
+  lineWidth: number;       // 每行字数
+  lineSpacing: number;     // 行间距（像素）
+  blockSpacing: number;    // 块间距（像素）
+  textAreaWidth: number;   // 文本区域宽度（像素）
+
+  // 滚动模式设置
+  contextLines: number;    // 上下文行数
+  dimmedTextColor: string; // 背景文本颜色
+
+  // 视觉辅助
+  focusPoint: 'left' | 'center' | 'right';
+  highlightFocus: boolean;
+  showProgress: boolean;
+
+  // 高级设置
+  speedVariability: boolean;
+  sentenceBreak: boolean;
+  pauseAtBreaks: boolean;
+  skipStopwords: boolean;
+  stopwords: string[];
 }
 
 // 阅读状态
