@@ -4,6 +4,45 @@ import React from 'react';
 import { useReader } from '@/app/hooks/useReader';
 import { SettingsPanel } from '../SettingsPanel';
 import { Display } from './Display';
+import { Controls } from './Controls';
+
+// 速度和字数控制组件
+function SpeedControls({ speed, chunkSize, onSpeedChange, onChunkSizeChange }: {
+  speed: number;
+  chunkSize: number;
+  onSpeedChange: (speed: number) => void;
+  onChunkSizeChange: (size: number) => void;
+}) {
+  return (
+    <div className="flex gap-4 justify-center mb-4">
+      <div className="setting-item">
+        <label htmlFor="speed">速度 (字/分钟):</label>
+        <input
+          id="speed"
+          type="number"
+          value={speed}
+          onChange={(e): void => onSpeedChange(Number(e.target.value))}
+          min={60}
+          max={1000}
+          step={30}
+          className="px-2 py-1 border rounded w-24"
+        />
+      </div>
+      <div className="setting-item">
+        <label htmlFor="chunkSize">每次显示字数:</label>
+        <input
+          id="chunkSize"
+          type="number"
+          value={chunkSize}
+          onChange={(e): void => onChunkSizeChange(Number(e.target.value))}
+          min={1}
+          max={20}
+          className="px-2 py-1 border rounded w-20"
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function Reader(): JSX.Element {
   const {
@@ -41,37 +80,24 @@ export default function Reader(): JSX.Element {
     };
   }, [handleKeyDown, showSettings]);
 
+  // 包装 updateSettings 函数以适配不同的接口
+  const handleSettingChange = React.useCallback(
+    (key: keyof typeof settings, value: any) => {
+      updateSettings({ [key]: value });
+    },
+    [updateSettings]
+  );
+
   return (
     <div className="reader-container max-w-4xl mx-auto">
-      <div className="controls mb-8">
-        <div className="flex gap-4 justify-center">
-          <div className="setting-item">
-            <label htmlFor="speed">速度 (字/分钟):</label>
-            <input
-              id="speed"
-              type="number"
-              value={speed}
-              onChange={(e): void => handleSpeedChange(Number(e.target.value))}
-              min={60}
-              max={1000}
-              step={30}
-              className="px-2 py-1 border rounded w-24"
-            />
-          </div>
-          <div className="setting-item">
-            <label htmlFor="chunkSize">每次显示字数:</label>
-            <input
-              id="chunkSize"
-              type="number"
-              value={chunkSize}
-              onChange={(e): void => handleChunkSizeChange(Number(e.target.value))}
-              min={1}
-              max={20}
-              className="px-2 py-1 border rounded w-20"
-            />
-          </div>
-        </div>
-      </div>
+      <Controls settings={settings} onSettingChange={handleSettingChange} />
+      
+      <SpeedControls
+        speed={speed}
+        chunkSize={chunkSize}
+        onSpeedChange={handleSpeedChange}
+        onChunkSizeChange={handleChunkSizeChange}
+      />
 
       <Display settings={settings} state={state} display={display} />
 

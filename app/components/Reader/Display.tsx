@@ -107,83 +107,115 @@ function PageHighlight({
   const actualPageSize = settings?.pageSize || pageSize;
   const containerHeight = lineHeight * actualPageSize;
 
-  // 将文本块合并成完整文本，并按换行符分割成行
-  const allText = chunks.join('');
-  const allLines = allText.split('\n').filter(line => line.trim() !== '');
-  
-  // 计算当前页
-  const totalPages = Math.ceil(allLines.length / actualPageSize);
-  const currentPage = Math.floor(currentPosition / chunks.length * totalPages);
-  
-  // 获取当前页的行范围
-  const startLineIndex = currentPage * actualPageSize;
-  const endLineIndex = Math.min(startLineIndex + actualPageSize, allLines.length);
-  const currentPageLines = allLines.slice(startLineIndex, endLineIndex);
-  
-  // 计算当前页对应的块范围
-  const startChunkIndex = Math.floor(startLineIndex / allLines.length * chunks.length);
-  const endChunkIndex = Math.min(Math.ceil(endLineIndex / allLines.length * chunks.length), chunks.length);
-  const currentPageChunks = chunks.slice(startChunkIndex, endChunkIndex);
-  
-  // 计算页内当前位置
-  const currentInPagePosition = currentPosition - startChunkIndex;
-
-  // 将当前页的文本块组织成原文格式，并添加高亮效果
-  const text = currentPageChunks.map((chunk, idx) => {
-    const isHighlighted = idx <= currentInPagePosition;
+  // 构建带有位置信息的文本
+  const textWithPositions = chunks.reduce((acc, chunk, index) => {
     return {
-      text: chunk,
-      highlighted: isHighlighted
+      text: acc.text + chunk,
+      positions: [...acc.positions, {
+        start: acc.text.length,
+        end: acc.text.length + chunk.length,
+        index
+      }]
     };
+  }, { text: '', positions: [] as Array<{ start: number; end: number; index: number }> });
+
+  // 将文本按行分割，并过滤掉空行
+  const allLines = textWithPositions.text.split('\n').filter(line => line.trim());
+  
+  // 计算分页相关的参数
+  const totalPages = Math.ceil(allLines.length / actualPageSize);
+  const currentPage = Math.min(
+    Math.floor(currentPosition / chunks.length * totalPages),
+    totalPages - 1
+  );
+  const startLine = currentPage * actualPageSize;
+  const currentPageLines = allLines.slice(startLine, startLine + actualPageSize);
+
+  // 补充空行到指定行数
+  while (currentPageLines.length < actualPageSize) {
+    currentPageLines.push('');
+  }
+
+  // 为每一行创建高亮信息
+  const lineHighlights = currentPageLines.map(line => {
+    if (!line) return [];
+    
+    const lineStart = textWithPositions.text.indexOf(line);
+    const lineEnd = lineStart + line.length;
+    
+    // 找出这一行包含的所有词组
+    const lineChunks = textWithPositions.positions.filter(pos => 
+      (pos.start >= lineStart && pos.start < lineEnd) || 
+      (pos.end > lineStart && pos.end <= lineEnd) ||
+      (pos.start <= lineStart && pos.end >= lineEnd)
+    );
+
+    // 为每个词组创建高亮信息
+    return lineChunks.map(chunk => ({
+      text: textWithPositions.text.slice(
+        Math.max(chunk.start, lineStart),
+        Math.min(chunk.end, lineEnd)
+      ),
+      isHighlighted: chunk.index <= currentPosition,
+      start: Math.max(chunk.start - lineStart, 0),
+      end: Math.min(chunk.end - lineStart, line.length)
+    }));
   });
-
-  // 将所有文本合并，保持原格式
-  const combinedText = text.reduce((acc, curr) => acc + curr.text, '');
-
-  // 创建高亮效果的标记点
-  const highlights = text.map((item, idx) => ({
-    start: text.slice(0, idx).reduce((acc, curr) => acc + curr.text.length, 0),
-    end: text.slice(0, idx + 1).reduce((acc, curr) => acc + curr.text.length, 0),
-    highlighted: item.highlighted
-  }));
 
   return (
     <div className="flex flex-col items-start justify-start w-full h-full">
       <div 
-        className="w-full relative overflow-hidden"
+        className="w-full relative"
         style={{
-          maxHeight: `${containerHeight}px`,
-          overflow: 'hidden'
+          height: `${containerHeight}px`
         }}
       >
         <motion.div
           className="w-full h-full"
-          initial={{ y: containerHeight }}
-          animate={{ y: 0 }}
-          exit={{ y: -containerHeight }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           key={currentPage}
           transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 30
+            duration: 0.2
           }}
         >
-          <div className="px-4 whitespace-pre-wrap text-left">
-            {highlights.map((highlight, idx) => {
-              const textPart = combinedText.slice(highlight.start, highlight.end);
-              return (
-                <span
-                  key={idx}
-                  style={{
-                    color: highlight.highlighted ? highlightColor : dimmedTextColor,
-                    transition: 'color 0.2s ease',
-                    fontFamily: 'LXGWWenKaiGB'
-                  }}
-                >
-                  {textPart}
-                </span>
-              );
-            })}
+          <div className="px-4 whitespace-pre-wrap text-left h-full flex flex-col">
+            {currentPageLines.map((line, lineIdx) => (
+              <div
+                key={lineIdx}
+                className="flex-1 flex items-center"
+                style={{
+                  color: dimmedTextColor,
+                  fontFamily: 'LXGWWenKaiGB'
+                }}
+              >
+                {line ? (
+                  lineHighlights[lineIdx].length === 0 ? (
+                    line
+                  ) : (
+                    <>
+                      {line.split('').map((char, charIdx) => {
+                        const highlight = lineHighlights[lineIdx].find(h => 
+                          charIdx >= h.start && charIdx < h.end
+                        );
+                        return (
+                          <span
+                            key={charIdx}
+                            style={{
+                              color: highlight?.isHighlighted ? highlightColor : dimmedTextColor,
+                              transition: 'color 0.2s ease'
+                            }}
+                          >
+                            {char}
+                          </span>
+                        );
+                      })}
+                    </>
+                  )
+                ) : null}
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>
