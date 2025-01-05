@@ -25,9 +25,9 @@ export function Display({ settings, state, display }: DisplayProps) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex-1 flex items-center justify-center min-h-[300px]">
       <div 
-        className="text-display w-full border rounded-lg mb-8 overflow-hidden bg-white"
+        className="w-full border rounded-lg overflow-hidden bg-white"
         style={containerStyle}
       >
         {settings.readingMode === 'highlight' ? (
@@ -60,8 +60,13 @@ export function Display({ settings, state, display }: DisplayProps) {
             />
           )
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span>{display}</span>
+          <div className="w-full flex items-center justify-center py-20">
+            <div 
+              className="text-center px-8 py-4"
+              style={{ fontSize: `${settings.fontSize}px` }}
+            >
+              <span>{display}</span>
+            </div>
           </div>
         )}
       </div>

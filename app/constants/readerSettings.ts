@@ -26,5 +26,6 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   sentenceBreak: true,
   pauseAtBreaks: true,
   skipStopwords: false,
-  stopwords: []
+  stopwords: [],
+  showProgress: true
 };

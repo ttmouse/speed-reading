@@ -107,6 +107,7 @@ export interface ReadingSettings {
   pauseAtBreaks: boolean;
   skipStopwords: boolean;
   stopwords: string[];
+  showProgress: boolean;  // 是否显示进度
 }
 
 // 阅读状态
