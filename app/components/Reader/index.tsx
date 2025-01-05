@@ -8,6 +8,7 @@ import { SpeedControls } from './SpeedControls';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { StatsDisplay } from './StatsDisplay';
 import { Display } from './Display/index';
+import { ProgressBar } from './ProgressBar';
 
 // 动态导入SettingsPanel，禁用SSR
 const SettingsPanel = dynamic(() => import('../SettingsPanel'), {
@@ -60,6 +61,12 @@ export default function Reader(): JSX.Element {
           />
 
           <Display settings={settings} state={state} display={display} />
+
+          <ProgressBar 
+            progress={state.progress} 
+            onProgressChange={state.setProgress}
+            isPaused={!isPlaying}
+          />
 
           <div className="mt-8">
             <textarea

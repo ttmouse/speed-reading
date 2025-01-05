@@ -126,6 +126,8 @@ export interface ReadingState {
   isPlaying: boolean;
   isPaused: boolean;
   display: string;
+  progress: number;
+  setProgress: (progress: number) => void;
 }
 
 // 阅读统计

@@ -34,10 +34,23 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     isPaused: false,
     display: '准备开始',
     chunks: [],
+    progress: 0,
+    setProgress: (progress: number) => {
+      setState(prev => {
+        const position = Math.floor(progress * prev.chunks.length);
+        return {
+          ...prev,
+          currentPosition: position,
+          progress,
+          display: prev.chunks[position] || '完成'
+        };
+      });
+    },
     setCurrentPosition: (position: number) => {
       setState(prev => ({
         ...prev,
         currentPosition: position,
+        progress: prev.chunks.length ? position / prev.chunks.length : 0,
         display: prev.chunks[position] || '完成'
       }));
     }
@@ -72,13 +85,19 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     setState(prev => {
       if (prev.isPaused || prev.currentPosition >= prev.chunks.length) {
         clearInterval(timerRef.current);
-        return { ...prev, isPlaying: false, display: prev.currentPosition >= prev.chunks.length ? '完成' : prev.display };
+        return { 
+          ...prev, 
+          isPlaying: false, 
+          display: prev.currentPosition >= prev.chunks.length ? '完成' : prev.display 
+        };
       }
 
       const chunk = prev.chunks[prev.currentPosition];
+      const newPosition = prev.currentPosition + 1;
       return {
         ...prev,
-        currentPosition: prev.currentPosition + 1,
+        currentPosition: newPosition,
+        progress: prev.chunks.length ? newPosition / prev.chunks.length : 0,
         display: chunk
       };
     });
@@ -161,10 +180,23 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       isPaused: false,
       display: '准备开始',
       chunks: [],
+      progress: 0,
+      setProgress: (progress: number) => {
+        setState(prev => {
+          const position = Math.floor(progress * prev.chunks.length);
+          return {
+            ...prev,
+            currentPosition: position,
+            progress,
+            display: prev.chunks[position] || '完成'
+          };
+        });
+      },
       setCurrentPosition: (position: number) => {
         setState(prev => ({
           ...prev,
           currentPosition: position,
+          progress: prev.chunks.length ? position / prev.chunks.length : 0,
           display: prev.chunks[position] || '完成'
         }));
       }
@@ -205,6 +237,7 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       setState(prev => ({
         ...prev,
         chunks: newChunks,
+        progress: newChunks.length ? prev.currentPosition / newChunks.length : 0,
         display: newChunks[prev.currentPosition] || '完成'
       }));
     }
