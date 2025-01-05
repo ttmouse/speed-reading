@@ -45,7 +45,13 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
   }, [settings, mounted]);
 
   if (!mounted) {
-    return null;
+    return (
+      <div className="fixed right-0 top-0 bottom-0 w-[320px] bg-white border-l shadow-lg">
+        <div className="flex justify-between items-center p-4 border-b bg-white">
+          <h2 className="text-xl font-bold">偏好设置</h2>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -63,7 +69,7 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
             min={60}
             max={1000}
             step={30}
-            value={settings.speed}
+            value={Number(settings.speed)}
             onChange={value => onUpdate({ speed: value })}
           />
         </div>
@@ -75,23 +81,21 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
           <RangeSlider
             min={1}
             max={10}
-            value={settings.chunkSize}
+            value={Number(settings.chunkSize)}
             onChange={value => onUpdate({ chunkSize: value })}
           />
         </div>
 
-        <div className="mb-4">
+        <div className="preference-item">
           <label className="block text-sm font-medium mb-1">
             字数浮动范围（{settings.flexibleRange}字）
           </label>
-          <input
-            type="range"
-            min="1"
-            max="3"
-            step="1"
-            value={settings.flexibleRange}
-            onChange={(e) => onUpdate({ flexibleRange: parseInt(e.target.value) })}
-            className="custom-range"
+          <RangeSlider
+            min={1}
+            max={3}
+            step={1}
+            value={Number(settings.flexibleRange)}
+            onChange={value => onUpdate({ flexibleRange: value })}
           />
           <div className="text-xs text-gray-500 mt-1">
             允许每组字数在目标字数±{settings.flexibleRange}字范围内浮动
@@ -282,6 +286,31 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
               />
               <span className="text-sm">隐藏末尾标点符号（如句号、逗号等）</span>
             </label>
+          </div>
+        </div>
+
+        <div className="preference-item border-t pt-4">
+          <h3 className="font-bold mb-3">显示</h3>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={settings.showProgress}
+                onChange={(e) => onUpdate({ showProgress: e.target.checked })}
+                className="toggle mr-2"
+              />
+              <label className="text-sm text-gray-600">显示进度</label>
+            </div>
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={settings.showChunkPreview}
+                onChange={(e) => onUpdate({ showChunkPreview: e.target.checked })}
+                className="toggle mr-2"
+              />
+              <label className="text-sm text-gray-600">显示分词预览</label>
+            </div>
           </div>
         </div>
       </div>

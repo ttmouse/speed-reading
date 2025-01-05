@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import type { 
   ReadingSettings, 
   ReadingState, 
@@ -20,11 +20,60 @@ import { useTextProcessor } from '@/app/hooks/useTextProcessor';
 import { useReadingStats } from '@/app/hooks/useReadingStats';
 import { useKeyboardControls } from '@/app/hooks/useKeyboardControls';
 import { useReadingTimer } from '@/app/hooks/useReadingTimer';
-import { splitTextIntoChunks } from '../utils/textProcessor';
+import { splitTextIntoChunks, isBreakPoint, getSpeedFactor } from '../utils/textProcessor';
 import { loadSettings, saveSettings } from '../utils/storage';
 import { chunkText } from '../utils/textChunker';
 
 import { DEFAULT_SETTINGS } from '../constants/readerSettings';
+
+// 状态更新函数
+function createStateUpdater(setState: React.Dispatch<React.SetStateAction<ReadingState>>) {
+  return {
+    // 更新进度
+    updateProgress: (progress: number) => {
+      setState(prev => {
+        const position = Math.floor(progress * prev.chunks.length);
+        return {
+          ...prev,
+          currentPosition: position,
+          progress,
+          display: prev.chunks[position] || '完成'
+        };
+      });
+    },
+
+    // 更新当前位置
+    updatePosition: (position: number) => {
+      setState(prev => ({
+        ...prev,
+        currentPosition: position,
+        progress: prev.chunks.length ? position / prev.chunks.length : 0,
+        display: prev.chunks[position] || '完成'
+      }));
+    },
+
+    // 更新文本块
+    updateChunks: (newChunks: string[]) => {
+      setState(prev => ({
+        ...prev,
+        chunks: newChunks,
+        currentPosition: 0,
+        progress: 0,
+        display: newChunks[0] || '准备开始'
+      }));
+    },
+
+    // 更新播放状态
+    updatePlayState: (isPlaying: boolean, isPaused: boolean = false) => {
+      setState(prev => ({
+        ...prev,
+        isPlaying,
+        isPaused,
+        display: prev.currentPosition >= prev.chunks.length ? '完成' : prev.display
+      }));
+    }
+  };
+}
 
 export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderReturn {
   const [settings, setSettings] = useState<ReadingSettings>(() => loadSettings());
@@ -37,6 +86,7 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       readingMode: settings.readingMode,
       highlightStyle: settings.highlightStyle
     });
+    
     return {
       text: DEFAULT_TEXT,
       currentPosition: 0,
@@ -44,28 +94,11 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       isPaused: false,
       display: '准备开始',
       chunks: initialChunks,
-      progress: 0,
-      setProgress: (progress: number) => {
-        setState(prev => {
-          const position = Math.floor(progress * prev.chunks.length);
-          return {
-            ...prev,
-            currentPosition: position,
-            progress,
-            display: prev.chunks[position] || '完成'
-          };
-        });
-      },
-      setCurrentPosition: (position: number) => {
-        setState(prev => ({
-          ...prev,
-          currentPosition: position,
-          progress: prev.chunks.length ? position / prev.chunks.length : 0,
-          display: prev.chunks[position] || '完成'
-        }));
-      }
+      progress: 0
     };
   });
+
+  const stateUpdater = useMemo(() => createStateUpdater(setState), []);
 
   // 使用拆分后的 hooks
   const { splitIntoChunks } = useTextProcessor(settings);
@@ -73,10 +106,8 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
   const { stats, updateStats } = useReadingStats({ state, settings, startTimeRef });
 
   const handleTextChange = useCallback((newText: string) => {
-    // 先更新文本
     setState(prev => ({ ...prev, text: newText }));
     
-    // 使用新的分词方法处理文本
     const newChunks = chunkText(newText, {
       chunkSize: settings.chunkSize,
       sentenceBreak: settings.sentenceBreak,
@@ -86,15 +117,8 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       highlightStyle: settings.highlightStyle
     });
 
-    // 更新状态
-    setState(prev => ({
-      ...prev,
-      chunks: newChunks,
-      currentPosition: 0,
-      progress: 0,
-      display: newChunks[0] || '准备开始'
-    }));
-  }, [settings.chunkSize, settings.sentenceBreak, settings.flexibleRange, settings.hideEndPunctuation, settings.readingMode, settings.highlightStyle]);
+    stateUpdater.updateChunks(newChunks);
+  }, [settings, stateUpdater]);
 
   const handleSpeedChange = useCallback((speed: number) => {
     setSettings(prev => {
@@ -116,24 +140,16 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     setState(prev => {
       if (prev.isPaused || prev.currentPosition >= prev.chunks.length) {
         clearInterval(timerRef.current);
-        return { 
-          ...prev, 
-          isPlaying: false, 
-          display: prev.currentPosition >= prev.chunks.length ? '完成' : prev.display 
-        };
+        stateUpdater.updatePlayState(false);
+        return prev;
       }
 
-      const chunk = prev.chunks[prev.currentPosition];
       const newPosition = prev.currentPosition + 1;
-      return {
-        ...prev,
-        currentPosition: newPosition,
-        progress: prev.chunks.length ? newPosition / prev.chunks.length : 0,
-        display: chunk
-      };
+      stateUpdater.updatePosition(newPosition);
+      return prev;
     });
     updateStats();
-  }, [updateStats, timerRef]);
+  }, [updateStats, timerRef, stateUpdater]);
 
   const startReading = useCallback(() => {
     if (!state.text) return;
@@ -152,17 +168,15 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     const getInterval = (position: number) => {
       let interval = 60000 / settings.speed;
 
-      // 在分页模式下，每页第一行增加停留时间
-      if (settings.readingMode === 'highlight' && 
-          settings.highlightStyle === 'page' && 
-          position % settings.pageSize === 0) {
-        interval *= 1.5; // 增加 50% 的停留时间
-      }
-
-      // 原有的速度变化逻辑
-      if (settings.speedVariability) {
-        const chunk = chunks[position] || '';
-        const factor = Math.max(0.5, Math.min(2, chunk.length / settings.chunkSize));
+      // 获取当前块
+      const chunk = chunks[position] || '';
+      
+      // 检查是否是句末或段落末
+      const isBreak = isBreakPoint(chunk, chunk.length - 1);
+      
+      // 计算速度调整因子
+      if (settings.speedVariability || (settings.pauseAtBreaks && isBreak)) {
+        const factor = getSpeedFactor(chunk, settings.chunkSize, isBreak);
         interval *= factor;
       }
 
@@ -211,26 +225,7 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       isPaused: false,
       display: '准备开始',
       chunks: [],
-      progress: 0,
-      setProgress: (progress: number) => {
-        setState(prev => {
-          const position = Math.floor(progress * prev.chunks.length);
-          return {
-            ...prev,
-            currentPosition: position,
-            progress,
-            display: prev.chunks[position] || '完成'
-          };
-        });
-      },
-      setCurrentPosition: (position: number) => {
-        setState(prev => ({
-          ...prev,
-          currentPosition: position,
-          progress: prev.chunks.length ? position / prev.chunks.length : 0,
-          display: prev.chunks[position] || '完成'
-        }));
-      }
+      progress: 0
     });
     
     startTimeRef.current = 0;

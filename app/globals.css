@@ -56,4 +56,75 @@
   .custom-range::-moz-range-progress {
     @apply bg-blue-500 rounded-full h-1;
   }
+
+  /* 自定义 range input 样式 */
+  .custom-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .custom-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #1f2937;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .custom-range::-webkit-slider-thumb:hover {
+    background: #111827;
+    transform: scale(1.1);
+  }
+
+  .custom-range::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #1f2937;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .custom-range::-moz-range-thumb:hover {
+    background: #111827;
+    transform: scale(1.1);
+  }
+
+  .custom-range::-moz-range-track {
+    background: #e5e7eb;
+    height: 4px;
+    border-radius: 2px;
+  }
+
+  /* 进度条特殊样式 */
+  .progress-range {
+    height: 8px;
+    background: #f3f4f6;
+  }
+
+  .progress-range::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+    background: #374151;
+  }
+
+  .progress-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #374151;
+  }
+
+  .progress-range::-moz-range-track {
+    height: 8px;
+    background: #f3f4f6;
+  }
 } 

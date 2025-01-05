@@ -11,6 +11,7 @@
     "sync": "node scripts/sync.js"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@vercel/analytics": "^1.1.1",
     "framer-motion": "^11.15.0",
     "next": "^14.2.0-canary.27",

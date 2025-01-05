@@ -3,7 +3,7 @@ import { ReadingMode, ReadingSettings, HighlightStyle } from '../../types';
 
 interface ControlsProps {
   settings: ReadingSettings;
-  onSettingChange: (key: keyof ReadingSettings, value: any) => void;
+  onSettingChange: (updates: Partial<ReadingSettings>) => void;
 }
 
 export function Controls({ settings, onSettingChange }: ControlsProps) {
@@ -12,7 +12,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
       {/* 阅读模式切换 */}
       <div className="flex flex-col items-center">
         <button
-          onClick={() => onSettingChange('readingMode', settings.readingMode === 'serial' ? 'highlight' : 'serial')}
+          onClick={() => onSettingChange({ readingMode: settings.readingMode === 'serial' ? 'highlight' : 'serial' })}
           className={`p-2 rounded-lg transition-colors ${
             settings.readingMode === 'serial' ? 'bg-gray-900 text-white' : 'bg-gray-200'
           }`}
@@ -37,7 +37,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
       {settings.readingMode === 'highlight' && (
         <div className="flex flex-col items-center">
           <button
-            onClick={() => onSettingChange('highlightStyle', settings.highlightStyle === 'scroll' ? 'page' : 'scroll')}
+            onClick={() => onSettingChange({ highlightStyle: settings.highlightStyle === 'scroll' ? 'page' : 'scroll' })}
             className={`p-2 rounded-lg transition-colors ${
               settings.highlightStyle === 'page' ? 'bg-gray-900 text-white' : 'bg-gray-200'
             }`}
@@ -62,7 +62,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
       {/* 进度显示切换 */}
       <div className="flex flex-col items-center">
         <button
-          onClick={() => onSettingChange('showProgress', !settings.showProgress)}
+          onClick={() => onSettingChange({ showProgress: !settings.showProgress })}
           className={`p-2 rounded-lg transition-colors ${
             settings.showProgress ? 'bg-gray-900 text-white' : 'bg-gray-200'
           }`}
