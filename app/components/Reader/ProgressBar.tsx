@@ -48,7 +48,7 @@ export function ProgressBar({ progress, onProgressChange, isPaused }: ProgressBa
   return (
     <div 
       ref={progressBarRef}
-      className="w-full h-[1px] bg-gray-200 rounded-full relative mb-4"
+      className="w-full h-8 flex items-center cursor-pointer relative mb-4"
       onMouseDown={(e) => {
         if (!isPaused) return;
         setIsDragging(true);
@@ -60,10 +60,12 @@ export function ProgressBar({ progress, onProgressChange, isPaused }: ProgressBa
         handleDrag(e.nativeEvent);
       }}
     >
-      <div
-        className="absolute top-0 left-0 h-full bg-gray-600"
-        style={{ width: `${clampedProgress * 100}%` }}
-      />
+      <div className="w-full h-[1px] bg-gray-200 rounded-full">
+        <div
+          className="absolute top-1/2 -translate-y-1/2 left-0 h-[1px] bg-gray-600"
+          style={{ width: `${clampedProgress * 100}%` }}
+        />
+      </div>
       <div 
         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
         style={{ 
