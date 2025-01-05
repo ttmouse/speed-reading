@@ -13,9 +13,16 @@ interface ScrollViewProps {
     contextLines: number;
     dimmedTextColor: string;
     fontColor: string;
+    hideEndPunctuation: boolean;
   };
   currentPosition: number;
 }
+
+// 处理标点符号隐藏
+const processDisplay = (text: string, hideEndPunctuation: boolean): string => {
+  if (!hideEndPunctuation) return text;
+  return text.replace(/[。，、；：？！,.;:?!]$/, '');
+};
 
 export function ScrollView({ text, chunks, settings, currentPosition }: ScrollViewProps) {
   const lineHeight = 40;
@@ -115,7 +122,10 @@ export function ScrollView({ text, chunks, settings, currentPosition }: ScrollVi
                 hasHighlight ? (
                   <>
                     <span style={{ color: settings.fontColor }}>
-                      {line.slice(0, highlightEnd)}
+                      {settings.hideEndPunctuation ? 
+                        processDisplay(line.slice(0, highlightEnd), true) :
+                        line.slice(0, highlightEnd)
+                      }
                     </span>
                     <span style={{ color: settings.dimmedTextColor }}>
                       {line.slice(highlightEnd)}

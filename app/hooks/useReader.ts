@@ -32,7 +32,10 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     const initialChunks = chunkText(DEFAULT_TEXT, {
       chunkSize: settings.chunkSize,
       sentenceBreak: settings.sentenceBreak,
-      flexibleRange: settings.flexibleRange
+      flexibleRange: settings.flexibleRange,
+      hideEndPunctuation: settings.hideEndPunctuation,
+      readingMode: settings.readingMode,
+      highlightStyle: settings.highlightStyle
     });
     return {
       text: DEFAULT_TEXT,
@@ -77,7 +80,10 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     const newChunks = chunkText(newText, {
       chunkSize: settings.chunkSize,
       sentenceBreak: settings.sentenceBreak,
-      flexibleRange: settings.flexibleRange
+      flexibleRange: settings.flexibleRange,
+      hideEndPunctuation: settings.hideEndPunctuation,
+      readingMode: settings.readingMode,
+      highlightStyle: settings.highlightStyle
     });
 
     // 更新状态
@@ -88,7 +94,7 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       progress: 0,
       display: newChunks[0] || '准备开始'
     }));
-  }, [settings.chunkSize, settings.sentenceBreak, settings.flexibleRange]);
+  }, [settings.chunkSize, settings.sentenceBreak, settings.flexibleRange, settings.hideEndPunctuation, settings.readingMode, settings.highlightStyle]);
 
   const handleSpeedChange = useCallback((speed: number) => {
     setSettings(prev => {
@@ -261,7 +267,10 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       const newChunks = chunkText(state.text, {
         chunkSize: newSize,
         sentenceBreak: settings.sentenceBreak,
-        flexibleRange: settings.flexibleRange
+        flexibleRange: settings.flexibleRange,
+        hideEndPunctuation: settings.hideEndPunctuation,
+        readingMode: settings.readingMode,
+        highlightStyle: settings.highlightStyle
       });
       setState(prev => ({
         ...prev,
@@ -270,7 +279,7 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
         display: newChunks[prev.currentPosition] || '完成'
       }));
     }
-  }, [settings.chunkSize, settings.sentenceBreak, settings.flexibleRange, handleChunkSizeChange, state.text]);
+  }, [settings, handleChunkSizeChange, state.text]);
 
   const updateChunks = useCallback((newSize: number) => {
     if (state.isPlaying) {
@@ -278,14 +287,17 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       const newChunks = chunkText(remainingText, {
         chunkSize: newSize,
         sentenceBreak: settings.sentenceBreak,
-        flexibleRange: settings.flexibleRange
+        flexibleRange: settings.flexibleRange,
+        hideEndPunctuation: settings.hideEndPunctuation,
+        readingMode: settings.readingMode,
+        highlightStyle: settings.highlightStyle
       });
       setState(prev => ({
         ...prev,
         chunks: [...prev.chunks.slice(0, prev.currentPosition), ...newChunks]
       }));
     }
-  }, [state.isPlaying, state.text, state.currentPosition, settings.sentenceBreak, settings.flexibleRange]);
+  }, [state.isPlaying, state.text, state.currentPosition, settings]);
 
   const updateSettings = useCallback((updates: Partial<ReadingSettings>) => {
     setSettings(prev => {
@@ -293,11 +305,19 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       saveSettings(newSettings);
 
       // 如果更新了分词相关的设置，重新分词
-      if ('chunkSize' in updates || 'sentenceBreak' in updates || 'flexibleRange' in updates) {
+      if ('chunkSize' in updates || 
+          'sentenceBreak' in updates || 
+          'flexibleRange' in updates ||
+          'hideEndPunctuation' in updates ||
+          'readingMode' in updates ||
+          'highlightStyle' in updates) {
         const newChunks = chunkText(state.text, {
           chunkSize: newSettings.chunkSize,
           sentenceBreak: newSettings.sentenceBreak,
-          flexibleRange: newSettings.flexibleRange
+          flexibleRange: newSettings.flexibleRange,
+          hideEndPunctuation: newSettings.hideEndPunctuation,
+          readingMode: newSettings.readingMode,
+          highlightStyle: newSettings.highlightStyle
         });
         setState(prev => ({
           ...prev,

@@ -107,7 +107,8 @@ export interface ReadingSettings {
   pauseAtBreaks: boolean;
   skipStopwords: boolean;
   stopwords: string[];
-  showProgress: boolean;  // 是否显示进度
+  hideEndPunctuation: boolean;  // 隐藏末尾标点
+  showProgress: boolean;
   flexibleRange: number;     // 分词长度的浮动范围 (0-1 之间)
 }
 

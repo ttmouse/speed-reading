@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { ReadingSettings } from '../types';
 import { DEFAULT_SETTINGS } from '../constants/readerSettings';
 import { RangeSlider } from './common/RangeSlider';
@@ -9,6 +11,12 @@ interface SettingsPanelProps {
 }
 
 const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleStopwordsChange = (value: string) => {
     onUpdate({ stopwords: value.split('\n').filter(word => word.trim()) });
   };
@@ -28,12 +36,17 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
   };
 
   React.useEffect(() => {
-    // 初始化所有 range input 的进度
-    const rangeInputs = document.querySelectorAll('input[type="range"]');
-    rangeInputs.forEach(input => {
-      updateRangeProgress(input as HTMLInputElement);
-    });
-  }, [settings]);
+    if (mounted) {
+      const rangeInputs = document.querySelectorAll('input[type="range"]');
+      rangeInputs.forEach(input => {
+        updateRangeProgress(input as HTMLInputElement);
+      });
+    }
+  }, [settings, mounted]);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="fixed right-0 top-0 bottom-0 w-[320px] bg-white border-l shadow-lg flex flex-col">
@@ -209,6 +222,33 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
             <label className="flex items-center">
               <input
                 type="checkbox"
+                checked={settings.skipStopwords}
+                onChange={e => onUpdate({ skipStopwords: e.target.checked })}
+                className="mr-2"
+              />
+              <span className="text-sm">跳过停用词（如"的"、"了"等虚词）</span>
+            </label>
+            
+            {settings.skipStopwords && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium mb-1">
+                  停用词列表（每行一个词）
+                </label>
+                <textarea
+                  value={settings.stopwords.join('\n')}
+                  onChange={e => handleStopwordsChange(e.target.value)}
+                  className="w-full h-32 p-2 border rounded text-sm font-mono"
+                  placeholder="在此输入停用词，每行一个"
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                  这些词在阅读时会被跳过，可以帮助你更快地理解主要内容
+                </div>
+              </div>
+            )}
+
+            <label className="flex items-center">
+              <input
+                type="checkbox"
                 checked={settings.speedVariability}
                 onChange={e => onUpdate({ speedVariability: e.target.checked })}
                 className="mr-2"
@@ -232,6 +272,15 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
                 className="mr-2"
               />
               <span className="text-sm">在句末和段落末尾处稍作停顿</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={settings.hideEndPunctuation}
+                onChange={e => onUpdate({ hideEndPunctuation: e.target.checked })}
+                className="mr-2"
+              />
+              <span className="text-sm">隐藏末尾标点符号（如句号、逗号等）</span>
             </label>
           </div>
         </div>

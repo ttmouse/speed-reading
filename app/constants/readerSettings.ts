@@ -26,7 +26,14 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   sentenceBreak: true,
   pauseAtBreaks: true,
   skipStopwords: false,
-  stopwords: [],
+  stopwords: [
+    "的", "了", "和", "与", "或", "而", "但", "所", "以",
+    "之", "于", "则", "却", "并", "着", "让", "向", "往",
+    "是", "在", "到", "给", "又", "等", "被", "把", "来",
+    "去", "将", "从", "对", "能", "都", "要", "这", "那",
+    "你", "我", "他", "她", "它", "们", "个", "为", "才"
+  ],
+  hideEndPunctuation: false,  // 默认显示末尾标点
   showProgress: true,
   flexibleRange: 1,  // 默认浮动1个字
 };

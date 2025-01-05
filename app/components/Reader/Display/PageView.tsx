@@ -15,9 +15,16 @@ interface PageViewProps {
     pageSize: number;
     dimmedTextColor: string;
     fontColor: string;
+    hideEndPunctuation: boolean;
   };
   currentPosition: number;
 }
+
+// 处理标点符号隐藏
+const processDisplay = (text: string, hideEndPunctuation: boolean): string => {
+  if (!hideEndPunctuation) return text;
+  return text.replace(/[。，、；：？！,.;:?!]$/, '');
+};
 
 function PageViewComponent({ text, chunks, settings, currentPosition }: PageViewProps) {
   // 计算当前已读长度
@@ -100,7 +107,10 @@ function PageViewComponent({ text, chunks, settings, currentPosition }: PageView
                   hasHighlight ? (
                     <>
                       <span style={{ color: settings.fontColor }}>
-                        {line.slice(0, highlightEnd)}
+                        {settings.hideEndPunctuation ? 
+                          processDisplay(line.slice(0, highlightEnd), true) :
+                          line.slice(0, highlightEnd)
+                        }
                       </span>
                       <span style={{ color: settings.dimmedTextColor }}>
                         {line.slice(highlightEnd)}
