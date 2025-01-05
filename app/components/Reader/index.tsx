@@ -7,6 +7,7 @@ import { Controls } from './Controls';
 import { Display } from './Display/index';
 import { ProgressBar } from './ProgressBar';
 import { StatsDisplay } from './StatsDisplay';
+import { KeyboardShortcuts } from './KeyboardShortcuts';
 
 // 动态导入SettingsPanel，禁用SSR
 const SettingsPanel = dynamic(() => import('../SettingsPanel'), {
@@ -104,12 +105,15 @@ export default function Reader(): JSX.Element {
                 </div>
               </div>
             )}
+
+            <KeyboardShortcuts />
           </div>
 
           <StatsDisplay
             wordsRead={stats.wordsRead}
             currentWpm={stats.currentWpm}
             timeRemaining={stats.timeRemaining}
+            showProgress={settings.showProgress}
           />
         </div>
       </div>

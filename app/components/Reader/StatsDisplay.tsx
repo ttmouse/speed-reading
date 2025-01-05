@@ -6,9 +6,12 @@ interface StatsDisplayProps {
   wordsRead: number;
   currentWpm: number;
   timeRemaining: string;
+  showProgress: boolean;
 }
 
-export function StatsDisplay({ wordsRead, currentWpm, timeRemaining }: StatsDisplayProps) {
+export function StatsDisplay({ wordsRead, currentWpm, timeRemaining, showProgress }: StatsDisplayProps) {
+  if (!showProgress) return null;
+  
   return (
     <div className="stats mt-4 flex justify-center gap-8 text-sm text-gray-600">
       <span>已读: {wordsRead} 字</span>

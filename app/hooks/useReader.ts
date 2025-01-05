@@ -342,7 +342,10 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     onPause: pauseReading,
     onReset: resetReading,
     onResetAll: resetAll,
-    onSettingsClick
+    onSettingsClick,
+    onPositionChange: (position: number) => {
+      stateUpdater.updatePosition(position);
+    }
   });
 
   // 清理定时器

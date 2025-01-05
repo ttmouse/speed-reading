@@ -11,8 +11,10 @@ export function KeyboardShortcuts(): JSX.Element {
       <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">R</kbd> 重新开始
       <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">↑</kbd> 加速
       <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">↓</kbd> 减速
-      <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">←</kbd> 减少字数
-      <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">→</kbd> 增加字数
+      <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">-</kbd> 减少字数
+      <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">+</kbd> 增加字数
+      <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">←</kbd> 上一步
+      <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">→</kbd> 下一步
       <kbd className="mx-1 px-2 py-1 bg-white border rounded shadow-sm">S</kbd> 设置
     </div>
   );

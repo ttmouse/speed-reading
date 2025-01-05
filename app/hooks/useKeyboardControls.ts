@@ -12,6 +12,7 @@ interface UseKeyboardControlsProps {
   onReset: () => void;
   onResetAll: () => void;
   onSettingsClick?: () => void;
+  onPositionChange: (position: number) => void;
 }
 
 export function useKeyboardControls({
@@ -23,7 +24,8 @@ export function useKeyboardControls({
   onPause,
   onReset,
   onResetAll,
-  onSettingsClick
+  onSettingsClick,
+  onPositionChange
 }: UseKeyboardControlsProps) {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     switch(e.key.toLowerCase()) {
@@ -49,13 +51,26 @@ export function useKeyboardControls({
         e.preventDefault();
         onSpeedAdjust(-SPEED_STEP);
         break;
-      case 'arrowleft':
+      case '-':
         e.preventDefault();
         onChunkSizeAdjust(-1);
         break;
-      case 'arrowright':
+      case '=':
+      case '+':
         e.preventDefault();
         onChunkSizeAdjust(1);
+        break;
+      case 'arrowleft':
+        e.preventDefault();
+        if (state.currentPosition > 0) {
+          onPositionChange(state.currentPosition - 1);
+        }
+        break;
+      case 'arrowright':
+        e.preventDefault();
+        if (state.currentPosition < state.chunks.length - 1) {
+          onPositionChange(state.currentPosition + 1);
+        }
         break;
       case 's':
         if (onSettingsClick) {
@@ -65,13 +80,16 @@ export function useKeyboardControls({
     }
   }, [
     state.isPlaying,
+    state.currentPosition,
+    state.chunks.length,
     onSpeedAdjust,
     onChunkSizeAdjust,
     onStart,
     onPause,
     onReset,
     onResetAll,
-    onSettingsClick
+    onSettingsClick,
+    onPositionChange
   ]);
 
   return { handleKeyDown };
