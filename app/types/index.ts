@@ -108,6 +108,7 @@ export interface ReadingSettings {
   skipStopwords: boolean;
   stopwords: string[];
   showProgress: boolean;  // 是否显示进度
+  flexibleRange: number;     // 分词长度的浮动范围 (0-1 之间)
 }
 
 // 阅读状态

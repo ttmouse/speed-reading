@@ -5,93 +5,134 @@ import { motion } from 'framer-motion';
 
 interface ScrollViewProps {
   text: string;
+  chunks: string[];
   settings: {
-    chunkSize: number;      // 每组字数
-    fontSize: number;       // 字体大小
-    lineSpacing: number;    // 行间距
-    contextLines: number;   // 上下文行数
-    dimmedTextColor: string; // 暗色文本颜色
-    fontColor: string;      // 高亮文本颜色
+    chunkSize: number;
+    fontSize: number;
+    lineSpacing: number;
+    contextLines: number;
+    dimmedTextColor: string;
+    fontColor: string;
   };
   currentPosition: number;
 }
 
-export const ScrollView: React.FC<ScrollViewProps> = ({
-  text,
-  settings,
-  currentPosition
-}) => {
+export function ScrollView({ text, chunks, settings, currentPosition }: ScrollViewProps) {
   const lineHeight = 40;
   const totalLines = 1 + (settings.contextLines * 2);
   const containerHeight = lineHeight * totalLines;
 
-  // 将文本按chunkSize分割成块
-  const chunks: string[] = [];
-  for (let i = 0; i < text.length; i += settings.chunkSize) {
-    chunks.push(text.slice(i, i + settings.chunkSize));
+  // 计算当前已读长度
+  const readLength = chunks
+    .slice(0, currentPosition + 1)
+    .reduce((acc, chunk) => acc + chunk.length, 0);
+
+  // 将文本分成行
+  const lines = text.split('\n');
+
+  // 计算当前行
+  let currentLine = 0;
+  let accumulatedLength = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const lineLength = lines[i].length + (i > 0 ? 1 : 0); // 加上换行符的长度
+    if (accumulatedLength + lineLength > readLength) {
+      currentLine = i;
+      break;
+    }
+    accumulatedLength += lineLength;
   }
 
-  const currentChunk = Math.min(currentPosition, chunks.length - 1);
+  // 获取上下文行
+  const startLine = Math.max(0, currentLine - settings.contextLines);
+  const endLine = Math.min(lines.length, currentLine + settings.contextLines + 1);
+  const visibleLines = lines.slice(startLine, endLine);
 
   const getScrollY = (index: number) => {
-    return -(index * lineHeight) + (containerHeight - lineHeight) / 2;
+    return -(index * lineHeight) + (containerHeight / 2) - (lineHeight / 2);
   };
 
   const containerVariants = {
     animate: {
-      y: getScrollY(currentChunk),
+      y: getScrollY(currentLine - startLine),
       transition: {
         type: "spring",
-        stiffness: 400,
-        damping: 40,
-        mass: 0.8,
-        restDelta: 0.5
+        stiffness: 300,
+        damping: 30
       }
     }
   };
 
   const itemVariants = {
-    animate: (idx: number) => ({
-      opacity: Math.max(0.2, 1 - Math.abs(idx - currentChunk) * 0.25),
-      color: idx === currentChunk ? settings.fontColor : settings.dimmedTextColor,
-      transition: {
-        duration: 0.15,
-        ease: "easeOut"
-      }
-    })
+    animate: (idx: number) => {
+      const absoluteLineIdx = startLine + idx;
+      const lineStart = lines.slice(0, absoluteLineIdx).join('\n').length + (absoluteLineIdx > 0 ? 1 : 0);
+      const lineEnd = lineStart + lines[absoluteLineIdx].length;
+      const hasHighlight = lineStart < readLength && lineEnd > 0;
+      const isCurrentLine = absoluteLineIdx === currentLine;
+
+      return {
+        opacity: Math.max(0.2, 1 - Math.abs(idx - (currentLine - startLine)) * 0.25),
+        color: hasHighlight ? settings.fontColor : settings.dimmedTextColor,
+        transition: {
+          duration: 0.15,
+        }
+      };
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full relative">
-      <div 
-        className="absolute left-0 right-0 h-[40px] border-t border-b border-gray-200 opacity-10 pointer-events-none"
-        style={{ top: "50%", transform: "translateY(-50%)" }}
-      />
-      <div 
-        className="w-full relative overflow-hidden"
-        style={{ height: `${containerHeight}px` }}
+    <div 
+      className="relative w-full overflow-hidden py-4"
+      style={{ height: containerHeight }}
+    >
+      <motion.div
+        className="absolute w-full"
+        variants={containerVariants}
+        animate="animate"
       >
-        <motion.div
-          className="flex flex-col items-center w-full absolute left-0"
-          variants={containerVariants}
-          animate="animate"
-        >
-          {chunks.map((chunk, idx) => (
+        {visibleLines.map((line, idx) => {
+          const absoluteLineIdx = startLine + idx;
+          const lineStart = lines.slice(0, absoluteLineIdx).join('\n').length + (absoluteLineIdx > 0 ? 1 : 0);
+          const lineEnd = lineStart + line.length;
+          const hasHighlight = lineStart < readLength && lineEnd > 0;
+          const highlightEnd = hasHighlight ? Math.min(line.length, readLength - lineStart) : 0;
+
+          return (
             <motion.div
               key={idx}
-              className="text-center py-2 w-full h-[40px] flex items-center justify-center"
               custom={idx}
               variants={itemVariants}
               animate="animate"
+              className="flex items-center justify-center"
               style={{
-                fontSize: `${settings.fontSize}px`
+                height: lineHeight,
+                fontSize: settings.fontSize,
+                lineHeight: `${settings.lineSpacing}em`,
               }}
             >
-              {chunk}
+              {line ? (
+                hasHighlight ? (
+                  <>
+                    <span style={{ color: settings.fontColor }}>
+                      {line.slice(0, highlightEnd)}
+                    </span>
+                    <span style={{ color: settings.dimmedTextColor }}>
+                      {line.slice(highlightEnd)}
+                    </span>
+                  </>
+                ) : (
+                  <span style={{ color: settings.dimmedTextColor }}>
+                    {line}
+                  </span>
+                )
+              ) : (
+                <span>&nbsp;</span>
+              )}
             </motion.div>
-          ))}
-        </motion.div>
-      </div>
+          );
+        })}
+      </motion.div>
     </div>
   );
-}; 
+} 

@@ -67,6 +67,24 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
           />
         </div>
 
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">
+            字数浮动范围（{settings.flexibleRange}字）
+          </label>
+          <input
+            type="range"
+            min="1"
+            max="3"
+            step="1"
+            value={settings.flexibleRange}
+            onChange={(e) => onUpdate({ flexibleRange: parseInt(e.target.value) })}
+            className="custom-range"
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            允许每组字数在目标字数±{settings.flexibleRange}字范围内浮动
+          </div>
+        </div>
+
         <div className="preference-item">
           <label className="block text-sm font-medium mb-1">字体大小</label>
           <select 

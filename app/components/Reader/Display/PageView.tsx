@@ -6,39 +6,30 @@ import { motion } from 'framer-motion';
 
 interface PageViewProps {
   text: string;
+  chunks: string[];
   settings: {
-    chunkSize: number;      // 每组字数
-    textAreaWidth: number;  // 容器宽度（像素）
-    fontSize: number;       // 字体大小
-    lineSpacing: number;    // 行间距
-    pageSize?: number;      // 每页显示行数
-    dimmedTextColor: string; // 未读文本颜色
-    fontColor: string;      // 已读文本颜色
+    chunkSize: number;
+    textAreaWidth: number;
+    fontSize: number;
+    lineSpacing: number;
+    pageSize: number;
+    dimmedTextColor: string;
+    fontColor: string;
   };
   currentPosition: number;
 }
 
-const PageViewComponent: React.FC<PageViewProps> = ({
-  text,
-  settings,
-  currentPosition
-}) => {
-  // 1. 首先将文本分成块
-  const chunks: string[] = [];
-  for (let i = 0; i < text.length; i += settings.chunkSize) {
-    chunks.push(text.slice(i, i + settings.chunkSize));
-  }
-
-  // 2. 计算当前已读长度
+function PageViewComponent({ text, chunks, settings, currentPosition }: PageViewProps) {
+  // 计算当前已读长度
   const readLength = chunks
     .slice(0, currentPosition + 1)
     .reduce((acc, chunk) => acc + chunk.length, 0);
 
-  // 3. 将文本分成行
+  // 将文本分成行
   const lines = text.split('\n');
   const pageSize = settings.pageSize || 5;
 
-  // 4. 计算当前页
+  // 计算当前页
   let currentPage = 0;
   let accumulatedLength = 0;
   let startLine = 0;
@@ -56,10 +47,10 @@ const PageViewComponent: React.FC<PageViewProps> = ({
     accumulatedLength += pageLength;
   }
 
-  // 5. 获取当前页的行
+  // 获取当前页的行
   const currentPageLines = lines.slice(startLine, startLine + pageSize);
   
-  // 6. 补充空行到指定行数
+  // 补充空行到指定行数
   while (currentPageLines.length < pageSize) {
     currentPageLines.push('');
   }
@@ -130,7 +121,7 @@ const PageViewComponent: React.FC<PageViewProps> = ({
       </div>
     </div>
   );
-};
+}
 
 // 使用dynamic导入并禁用SSR
 export const PageView = dynamic(() => Promise.resolve(PageViewComponent), {

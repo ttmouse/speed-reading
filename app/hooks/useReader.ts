@@ -22,38 +22,46 @@ import { useKeyboardControls } from '@/app/hooks/useKeyboardControls';
 import { useReadingTimer } from '@/app/hooks/useReadingTimer';
 import { splitTextIntoChunks } from '../utils/textProcessor';
 import { loadSettings, saveSettings } from '../utils/storage';
+import { chunkText } from '../utils/textChunker';
 
 import { DEFAULT_SETTINGS } from '../constants/readerSettings';
 
 export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderReturn {
   const [settings, setSettings] = useState<ReadingSettings>(() => loadSettings());
-  const [state, setState] = useState<ReadingState>({
-    text: DEFAULT_TEXT,
-    currentPosition: 0,
-    isPlaying: false,
-    isPaused: false,
-    display: '准备开始',
-    chunks: [],
-    progress: 0,
-    setProgress: (progress: number) => {
-      setState(prev => {
-        const position = Math.floor(progress * prev.chunks.length);
-        return {
+  const [state, setState] = useState<ReadingState>(() => {
+    const initialChunks = chunkText(DEFAULT_TEXT, {
+      chunkSize: settings.chunkSize,
+      sentenceBreak: settings.sentenceBreak,
+      flexibleRange: settings.flexibleRange
+    });
+    return {
+      text: DEFAULT_TEXT,
+      currentPosition: 0,
+      isPlaying: false,
+      isPaused: false,
+      display: '准备开始',
+      chunks: initialChunks,
+      progress: 0,
+      setProgress: (progress: number) => {
+        setState(prev => {
+          const position = Math.floor(progress * prev.chunks.length);
+          return {
+            ...prev,
+            currentPosition: position,
+            progress,
+            display: prev.chunks[position] || '完成'
+          };
+        });
+      },
+      setCurrentPosition: (position: number) => {
+        setState(prev => ({
           ...prev,
           currentPosition: position,
-          progress,
+          progress: prev.chunks.length ? position / prev.chunks.length : 0,
           display: prev.chunks[position] || '完成'
-        };
-      });
-    },
-    setCurrentPosition: (position: number) => {
-      setState(prev => ({
-        ...prev,
-        currentPosition: position,
-        progress: prev.chunks.length ? position / prev.chunks.length : 0,
-        display: prev.chunks[position] || '完成'
-      }));
-    }
+        }));
+      }
+    };
   });
 
   // 使用拆分后的 hooks
@@ -61,9 +69,26 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
   const { timerRef, startTimeRef, updateInterval } = useReadingTimer();
   const { stats, updateStats } = useReadingStats({ state, settings, startTimeRef });
 
-  const handleTextChange = useCallback((text: string) => {
-    setState(prev => ({ ...prev, text }));
-  }, []);
+  const handleTextChange = useCallback((newText: string) => {
+    // 先更新文本
+    setState(prev => ({ ...prev, text: newText }));
+    
+    // 使用新的分词方法处理文本
+    const newChunks = chunkText(newText, {
+      chunkSize: settings.chunkSize,
+      sentenceBreak: settings.sentenceBreak,
+      flexibleRange: settings.flexibleRange
+    });
+
+    // 更新状态
+    setState(prev => ({
+      ...prev,
+      chunks: newChunks,
+      currentPosition: 0,
+      progress: 0,
+      display: newChunks[0] || '准备开始'
+    }));
+  }, [settings.chunkSize, settings.sentenceBreak, settings.flexibleRange]);
 
   const handleSpeedChange = useCallback((speed: number) => {
     setSettings(prev => {
@@ -233,7 +258,11 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     const newSize = settings.chunkSize + delta;
     if (newSize >= MIN_CHUNK_SIZE && newSize <= MAX_CHUNK_SIZE) {
       handleChunkSizeChange(newSize);
-      const newChunks = splitIntoChunks(state.text, newSize);
+      const newChunks = chunkText(state.text, {
+        chunkSize: newSize,
+        sentenceBreak: settings.sentenceBreak,
+        flexibleRange: settings.flexibleRange
+      });
       setState(prev => ({
         ...prev,
         chunks: newChunks,
@@ -241,26 +270,47 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
         display: newChunks[prev.currentPosition] || '完成'
       }));
     }
-  }, [settings.chunkSize, handleChunkSizeChange, state.text, splitIntoChunks]);
+  }, [settings.chunkSize, settings.sentenceBreak, settings.flexibleRange, handleChunkSizeChange, state.text]);
 
   const updateChunks = useCallback((newSize: number) => {
     if (state.isPlaying) {
       const remainingText = state.text.slice(state.currentPosition);
-      const newChunks = splitIntoChunks(remainingText, newSize);
+      const newChunks = chunkText(remainingText, {
+        chunkSize: newSize,
+        sentenceBreak: settings.sentenceBreak,
+        flexibleRange: settings.flexibleRange
+      });
       setState(prev => ({
         ...prev,
         chunks: [...prev.chunks.slice(0, prev.currentPosition), ...newChunks]
       }));
     }
-  }, [state.isPlaying, state.text, state.currentPosition, splitIntoChunks]);
+  }, [state.isPlaying, state.text, state.currentPosition, settings.sentenceBreak, settings.flexibleRange]);
 
   const updateSettings = useCallback((updates: Partial<ReadingSettings>) => {
     setSettings(prev => {
       const newSettings = { ...prev, ...updates };
       saveSettings(newSettings);
+
+      // 如果更新了分词相关的设置，重新分词
+      if ('chunkSize' in updates || 'sentenceBreak' in updates || 'flexibleRange' in updates) {
+        const newChunks = chunkText(state.text, {
+          chunkSize: newSettings.chunkSize,
+          sentenceBreak: newSettings.sentenceBreak,
+          flexibleRange: newSettings.flexibleRange
+        });
+        setState(prev => ({
+          ...prev,
+          chunks: newChunks,
+          currentPosition: 0,
+          progress: 0,
+          display: newChunks[0] || '准备开始'
+        }));
+      }
+
       return newSettings;
     });
-  }, []);
+  }, [state.text]);
 
   const processText = useCallback((text: string) => {
     if (!text) return [];

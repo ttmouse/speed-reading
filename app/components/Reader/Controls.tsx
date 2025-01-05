@@ -14,7 +14,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
         <button
           onClick={() => onSettingChange('readingMode', settings.readingMode === 'serial' ? 'highlight' : 'serial')}
           className={`p-2 rounded-lg transition-colors ${
-            settings.readingMode === 'serial' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            settings.readingMode === 'serial' ? 'bg-gray-900 text-white' : 'bg-gray-200'
           }`}
           title={settings.readingMode === 'serial' ? '串行模式' : '高亮模式'}
         >
@@ -39,7 +39,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
           <button
             onClick={() => onSettingChange('highlightStyle', settings.highlightStyle === 'scroll' ? 'page' : 'scroll')}
             className={`p-2 rounded-lg transition-colors ${
-              settings.highlightStyle === 'page' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+              settings.highlightStyle === 'page' ? 'bg-gray-900 text-white' : 'bg-gray-200'
             }`}
             title={settings.highlightStyle === 'scroll' ? '滚动式' : '分页式'}
           >
@@ -64,7 +64,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
         <button
           onClick={() => onSettingChange('showProgress', !settings.showProgress)}
           className={`p-2 rounded-lg transition-colors ${
-            settings.showProgress ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            settings.showProgress ? 'bg-gray-900 text-white' : 'bg-gray-200'
           }`}
           title={settings.showProgress ? '隐藏进度' : '显示进度'}
         >

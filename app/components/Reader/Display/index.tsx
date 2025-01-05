@@ -34,6 +34,7 @@ export function Display({ settings, state, display }: DisplayProps) {
           settings.highlightStyle === 'page' ? (
             <PageView
               text={state.text}
+              chunks={state.chunks}
               settings={{
                 chunkSize: settings.chunkSize,
                 textAreaWidth: settings.textAreaWidth,
@@ -48,6 +49,7 @@ export function Display({ settings, state, display }: DisplayProps) {
           ) : (
             <ScrollView
               text={state.text}
+              chunks={state.chunks}
               settings={{
                 chunkSize: settings.chunkSize,
                 fontSize: settings.fontSize,

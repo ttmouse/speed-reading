@@ -27,5 +27,6 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   pauseAtBreaks: true,
   skipStopwords: false,
   stopwords: [],
-  showProgress: true
+  showProgress: true,
+  flexibleRange: 1,  // 默认浮动1个字
 };
