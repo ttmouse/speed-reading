@@ -12,6 +12,8 @@ interface PageViewProps {
     fontSize: number;       // 字体大小
     lineSpacing: number;    // 行间距
     pageSize?: number;      // 每页显示行数
+    dimmedTextColor: string; // 未读文本颜色
+    fontColor: string;      // 已读文本颜色
   };
   currentPosition: number;
 }
@@ -106,15 +108,15 @@ const PageViewComponent: React.FC<PageViewProps> = ({
                 {line ? (
                   hasHighlight ? (
                     <>
-                      <span className="text-black">
+                      <span style={{ color: settings.fontColor }}>
                         {line.slice(0, highlightEnd)}
                       </span>
-                      <span className="text-gray-400">
+                      <span style={{ color: settings.dimmedTextColor }}>
                         {line.slice(highlightEnd)}
                       </span>
                     </>
                   ) : (
-                    <span className="text-gray-400">
+                    <span style={{ color: settings.dimmedTextColor }}>
                       {line}
                     </span>
                   )

@@ -9,7 +9,6 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   fontSize: 24,
   fontColor: '#000000',
   bgColor: '#ffffff',
-  textAlign: 'left',
   windowSize: '800x600',
   
   // 分页模式设置
@@ -21,11 +20,6 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   // 滚动模式设置
   contextLines: 2,
   dimmedTextColor: '#666666',
-  
-  // 视觉辅助
-  focusPoint: 'left',
-  highlightFocus: true,
-  showProgress: true,
   
   // 高级设置
   speedVariability: false,

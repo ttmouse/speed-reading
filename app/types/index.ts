@@ -42,8 +42,6 @@ export interface CommonSettings {
   skipStopwords: boolean;
   stopwords: string[];
   showProgress: boolean;
-  focusPoint: 'left' | 'center' | 'right';
-  highlightFocus: boolean;
   subvocalizationReminder: boolean;
   regressionControl: boolean;
   eyeMovementGuide: boolean;
@@ -91,7 +89,6 @@ export interface ReadingSettings {
   fontSize: number;
   fontColor: string;
   bgColor: string;
-  textAlign: string;
   windowSize: string;
 
   // 分页模式设置
@@ -103,11 +100,6 @@ export interface ReadingSettings {
   // 滚动模式设置
   contextLines: number;    // 上下文行数
   dimmedTextColor: string; // 背景文本颜色
-
-  // 视觉辅助
-  focusPoint: 'left' | 'center' | 'right';
-  highlightFocus: boolean;
-  showProgress: boolean;
 
   // 高级设置
   speedVariability: boolean;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ReadingMode, ReadingSettings, HighlightStyle } from '@/app/types';
+import { ReadingMode, ReadingSettings, HighlightStyle } from '../../types';
 
 interface ControlsProps {
   settings: ReadingSettings;
@@ -49,32 +49,6 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
           )}
         </button>
       )}
-
-      {/* 焦点位置切换 */}
-      <button
-        onClick={() => {
-          const focusPoints: Array<'left' | 'center' | 'right'> = ['left', 'center', 'right'];
-          const currentIndex = focusPoints.indexOf(settings.focusPoint);
-          const nextIndex = (currentIndex + 1) % focusPoints.length;
-          onSettingChange('focusPoint', focusPoints[nextIndex]);
-        }}
-        className={`p-2 rounded-lg transition-colors bg-gray-200 hover:bg-gray-300`}
-        title={`焦点位置: ${settings.focusPoint === 'left' ? '左' : settings.focusPoint === 'center' ? '中' : '右'}`}
-      >
-        {settings.focusPoint === 'left' ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-          </svg>
-        ) : settings.focusPoint === 'center' ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 6a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 6a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-          </svg>
-        )}
-      </button>
 
       {/* 进度显示切换 */}
       <button

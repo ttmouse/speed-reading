@@ -81,19 +81,6 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
           />
         </div>
 
-        <div className="preference-item">
-          <label className="block text-sm font-medium mb-1">文本对齐</label>
-          <select 
-            value={settings.textAlign}
-            onChange={e => onUpdate({ textAlign: e.target.value })}
-            className="w-full p-2 border rounded"
-          >
-            <option value="left">左对齐</option>
-            <option value="center">居中</option>
-            <option value="right">右对齐</option>
-          </select>
-        </div>
-
         <div className="preference-item border-t pt-4">
           <h3 className="font-bold mb-3">阅读模式</h3>
           <select 
@@ -185,41 +172,6 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
         </div>
 
         <div className="preference-item border-t pt-4">
-          <h3 className="font-bold mb-3">视觉辅助</h3>
-          <div className="space-y-2">
-            <select 
-              value={settings.focusPoint}
-              onChange={e => onUpdate({ focusPoint: e.target.value as any })}
-              className="w-full p-2 border rounded mb-2"
-            >
-              <option value="left">左侧注视点</option>
-              <option value="center">中心注视点</option>
-              <option value="right">右侧注视点</option>
-            </select>
-            
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={settings.highlightFocus}
-                onChange={e => onUpdate({ highlightFocus: e.target.checked })}
-                className="mr-2"
-              />
-              <span className="text-sm">高亮焦点词</span>
-            </label>
-            
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={settings.showProgress}
-                onChange={e => onUpdate({ showProgress: e.target.checked })}
-                className="mr-2"
-              />
-              <span className="text-sm">显示进度条</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="preference-item border-t pt-4">
           <h3 className="font-bold mb-3">高级设置</h3>
           <div className="space-y-2">
             <label className="flex items-center">
@@ -251,37 +203,9 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
             </label>
           </div>
         </div>
-
-        <div className="preference-item border-t pt-4">
-          <h3 className="font-bold mb-3">停用词设置</h3>
-          <label className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              checked={settings.skipStopwords}
-              onChange={e => onUpdate({ skipStopwords: e.target.checked })}
-              className="mr-2"
-            />
-            <span className="text-sm">跳过停用词（不影响理解的词，如"的"、"了"等）</span>
-          </label>
-          <textarea
-            value={settings.stopwords.join('\n')}
-            onChange={e => handleStopwordsChange(e.target.value)}
-            placeholder="每行一个停用词"
-            className="w-full h-32 p-2 border rounded text-sm"
-          />
-        </div>
-      </div>
-
-      <div className="border-t p-4 bg-white">
-        <button 
-          onClick={() => onUpdate(DEFAULT_SETTINGS)}
-          className="w-full px-4 py-2 text-gray-600 hover:text-gray-800 rounded border hover:bg-gray-50"
-        >
-          恢复默认
-        </button>
       </div>
     </div>
   );
-};
+}
 
 export default SettingsPanel; 

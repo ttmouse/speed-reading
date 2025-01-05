@@ -40,7 +40,9 @@ export function Display({ settings, state, display }: DisplayProps) {
                 textAreaWidth: settings.textAreaWidth,
                 fontSize: settings.fontSize,
                 lineSpacing: settings.lineSpacing,
-                pageSize: settings.pageSize
+                pageSize: settings.pageSize,
+                dimmedTextColor: settings.dimmedTextColor,
+                fontColor: settings.fontColor
               }}
               currentPosition={state.currentPosition}
             />
