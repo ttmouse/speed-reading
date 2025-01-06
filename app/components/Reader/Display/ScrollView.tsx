@@ -29,21 +29,22 @@ export function ScrollView({ text, chunks, settings, currentPosition }: ScrollVi
   const totalLines = 1 + (settings.contextLines * 2);
   const containerHeight = lineHeight * totalLines;
 
-  // 计算当前已读长度
-  const readLength = chunks
-    .slice(0, currentPosition + 1)
-    .reduce((acc, chunk) => acc + chunk.length, 0);
+  // 计算当前块的内容和位置
+  const currentChunk = chunks[currentPosition] || '';
+  const previousChunks = chunks.slice(0, currentPosition).join('');
+  const currentChunkStart = previousChunks.length;
+  const currentChunkEnd = currentChunkStart + currentChunk.length;
 
   // 将文本分成行
   const lines = text.split('\n');
-
+  
   // 计算当前行
   let currentLine = 0;
   let accumulatedLength = 0;
-
+  
   for (let i = 0; i < lines.length; i++) {
     const lineLength = lines[i].length + (i > 0 ? 1 : 0); // 加上换行符的长度
-    if (accumulatedLength + lineLength > readLength) {
+    if (accumulatedLength <= currentChunkStart && (accumulatedLength + lineLength) > currentChunkStart) {
       currentLine = i;
       break;
     }
@@ -64,8 +65,10 @@ export function ScrollView({ text, chunks, settings, currentPosition }: ScrollVi
       y: getScrollY(currentLine - startLine),
       transition: {
         type: "spring",
-        stiffness: 300,
-        damping: 30
+        stiffness: 200,  // 降低刚度，使动画更平滑
+        damping: 25,     // 调整阻尼
+        mass: 0.8,       // 添加质量参数
+        restDelta: 0.5   // 添加静止阈值
       }
     }
   };
@@ -75,14 +78,16 @@ export function ScrollView({ text, chunks, settings, currentPosition }: ScrollVi
       const absoluteLineIdx = startLine + idx;
       const lineStart = lines.slice(0, absoluteLineIdx).join('\n').length + (absoluteLineIdx > 0 ? 1 : 0);
       const lineEnd = lineStart + lines[absoluteLineIdx].length;
-      const hasHighlight = lineStart < readLength && lineEnd > 0;
       const isCurrentLine = absoluteLineIdx === currentLine;
+      const hasHighlight = lineStart < currentChunkEnd && lineEnd > currentChunkStart;
 
       return {
-        opacity: Math.max(0.2, 1 - Math.abs(idx - (currentLine - startLine)) * 0.25),
+        opacity: isCurrentLine ? 1 : Math.max(0.3, 1 - Math.abs(idx - (currentLine - startLine)) * 0.2),
         color: hasHighlight ? settings.fontColor : settings.dimmedTextColor,
+        scale: isCurrentLine ? 1 : 0.98,
         transition: {
-          duration: 0.15,
+          duration: 0.2,
+          ease: "easeOut"
         }
       };
     }
@@ -93,6 +98,16 @@ export function ScrollView({ text, chunks, settings, currentPosition }: ScrollVi
       className="relative w-full overflow-hidden py-4"
       style={{ height: containerHeight }}
     >
+      <div className="absolute inset-0 pointer-events-none">
+        <div 
+          className="absolute left-0 right-0 border-t border-b border-gray-200 opacity-10"
+          style={{ 
+            top: '50%',
+            height: lineHeight,
+            transform: 'translateY(-50%)'
+          }}
+        />
+      </div>
       <motion.div
         className="absolute w-full"
         variants={containerVariants}
@@ -102,8 +117,9 @@ export function ScrollView({ text, chunks, settings, currentPosition }: ScrollVi
           const absoluteLineIdx = startLine + idx;
           const lineStart = lines.slice(0, absoluteLineIdx).join('\n').length + (absoluteLineIdx > 0 ? 1 : 0);
           const lineEnd = lineStart + line.length;
-          const hasHighlight = lineStart < readLength && lineEnd > 0;
-          const highlightEnd = hasHighlight ? Math.min(line.length, readLength - lineStart) : 0;
+          const hasHighlight = lineStart < currentChunkEnd && lineEnd > currentChunkStart;
+          const highlightStart = Math.max(0, currentChunkStart - lineStart);
+          const highlightEnd = Math.min(line.length, currentChunkEnd - lineStart);
 
           return (
             <motion.div
@@ -121,10 +137,13 @@ export function ScrollView({ text, chunks, settings, currentPosition }: ScrollVi
               {line ? (
                 hasHighlight ? (
                   <>
+                    <span style={{ color: settings.dimmedTextColor }}>
+                      {line.slice(0, highlightStart)}
+                    </span>
                     <span style={{ color: settings.fontColor }}>
                       {settings.hideEndPunctuation ? 
-                        processDisplay(line.slice(0, highlightEnd), true) :
-                        line.slice(0, highlightEnd)
+                        processDisplay(line.slice(highlightStart, highlightEnd), true) :
+                        line.slice(highlightStart, highlightEnd)
                       }
                     </span>
                     <span style={{ color: settings.dimmedTextColor }}>

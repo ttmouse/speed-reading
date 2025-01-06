@@ -31,14 +31,29 @@ export function DisplayManager({
   display,
   enabled = false 
 }: DisplayManagerProps) {
-  if (!enabled || !settings.displayMode) return null;
-
   const themeColors = THEME_COLORS[settings.theme === 'LIGHT' ? 'light' : 'dark'];
   
   const containerStyle = {
     color: themeColors.text,
     backgroundColor: themeColors.background
   };
+
+  // 如果未启用新模式或没有设置显示模式，使用基础显示
+  if (!enabled || !settings.displayMode) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[300px]">
+        <div 
+          className="w-full border rounded-lg overflow-hidden"
+          style={containerStyle}
+        >
+          <BaseDisplay 
+            text={display}
+            fontSize={settings.fontSize}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex items-center justify-center min-h-[300px]">
