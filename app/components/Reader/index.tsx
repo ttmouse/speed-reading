@@ -29,7 +29,8 @@ export default function Reader(): JSX.Element {
     handleSpeedChange,
     handleChunkSizeChange,
     updateSettings,
-    handleKeyDown
+    handleKeyDown,
+    setCurrentPosition
   } = useReader();
 
   // 确保组件只在客户端渲染
@@ -66,7 +67,7 @@ export default function Reader(): JSX.Element {
           {settings.showProgress && (
             <ProgressBar 
               progress={state.currentPosition / Math.max(1, state.chunks.length - 1)}
-              onProgressChange={(progress) => state.setCurrentPosition(Math.floor(progress * state.chunks.length))}
+              onProgressChange={(progress) => setCurrentPosition(Math.floor(progress * state.chunks.length))}
               isPaused={!isPlaying}
             />
           )}

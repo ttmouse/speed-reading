@@ -369,11 +369,18 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     handleTextChange,
     handleSpeedChange,
     handleChunkSizeChange,
-    updateSettings,
+    updateSettings: (updates: Partial<ReadingSettings>) => {
+      setSettings(prev => {
+        const newSettings = { ...prev, ...updates };
+        saveSettings(newSettings);
+        return newSettings;
+      });
+    },
     startReading,
     pauseReading,
     resetReading,
     resetAll,
-    handleKeyDown
+    handleKeyDown,
+    setCurrentPosition: stateUpdater.updatePosition
   };
 } 

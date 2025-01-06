@@ -86,6 +86,7 @@ export interface UseReaderReturn {
   resetReading: () => void;
   resetAll: () => void;
   handleKeyDown: (event: KeyboardEvent) => void;
+  setCurrentPosition: (position: number) => void;
 }
 
 // 分词选项
