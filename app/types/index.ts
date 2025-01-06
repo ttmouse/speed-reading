@@ -1,9 +1,10 @@
 import { ThemeMode } from '../constants/themes';
 
-// 阅读模式
-export type ReadingMode = 'serial' | 'highlight';
+// 新的阅读模式
+export type DisplayMode = 'serial' | 'scroll' | 'page';
 
-// 高亮样式
+// 旧的阅读模式（保持向后兼容）
+export type ReadingMode = 'serial' | 'highlight';
 export type HighlightStyle = 'scroll' | 'page';
 
 // 阅读设置
@@ -11,6 +12,7 @@ export interface ReadingSettings {
   // 基础设置
   readingMode: ReadingMode;
   highlightStyle: HighlightStyle;
+  displayMode?: DisplayMode;  // 新增：统一的显示模式
   speed: number;
   chunkSize: number;
   

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useReader } from '@/app/hooks/useReader';
+import { useFeatures } from '@/app/hooks/useFeatures';
 import { Controls } from './Controls';
 import { Display } from './Display/index';
 import { ProgressBar } from './ProgressBar';
@@ -16,6 +17,7 @@ const SettingsPanel = dynamic(() => import('../SettingsPanel'), {
 
 export default function Reader(): JSX.Element {
   const [mounted, setMounted] = useState(false);
+  const { isEnabled } = useFeatures();
   const {
     text,
     speed,
@@ -60,9 +62,18 @@ export default function Reader(): JSX.Element {
       {/* 主内容区域 */}
       <div className="flex-1 p-4 pr-[340px]">
         <div className="w-full">
-          <Controls settings={settings} onSettingChange={updateSettings} />
+          <Controls 
+            settings={settings} 
+            onSettingChange={updateSettings}
+            enabled={isEnabled('newReadingMode')}
+          />
           
-          <Display settings={settings} state={state} display={display} />
+          <Display 
+            settings={settings} 
+            state={state} 
+            display={display}
+            enabled={isEnabled('newReadingMode')}
+          />
 
           {settings.showProgress && (
             <ProgressBar 
