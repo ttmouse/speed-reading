@@ -43,7 +43,7 @@ export function ProgressBar({ progress, onProgressChange, isPaused }: ProgressBa
       window.removeEventListener('mouseup', handleEnd);
       window.removeEventListener('touchend', handleEnd);
     };
-  }, [isDragging, isPaused]);
+  }, [isDragging, isPaused, handleDrag]);
 
   return (
     <div 
@@ -89,4 +89,4 @@ export function ProgressBar({ progress, onProgressChange, isPaused }: ProgressBa
       </div>
     </div>
   );
-} 
+}   
