@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react';
+import { RangeSlider } from '../common/RangeSlider';
 
 interface SpeedControlsProps {
   speed: number;
@@ -17,29 +18,27 @@ export function SpeedControls({
 }: SpeedControlsProps): JSX.Element {
   return (
     <div className="flex gap-4 justify-center mb-4">
-      <div className="setting-item">
-        <label htmlFor="speed">速度 (字/分钟):</label>
-        <input
-          id="speed"
-          type="number"
-          value={speed}
-          onChange={(e): void => onSpeedChange(Number(e.target.value))}
+      <div className="setting-item flex-1">
+        <label className="block text-sm font-medium mb-1">
+          速度 ({speed} 字/分钟)
+        </label>
+        <RangeSlider
           min={60}
           max={1000}
           step={30}
-          className="px-2 py-1 border rounded w-24"
+          value={speed}
+          onChange={onSpeedChange}
         />
       </div>
-      <div className="setting-item">
-        <label htmlFor="chunkSize">每次显示字数:</label>
-        <input
-          id="chunkSize"
-          type="number"
-          value={chunkSize}
-          onChange={(e): void => onChunkSizeChange(Number(e.target.value))}
+      <div className="setting-item flex-1">
+        <label className="block text-sm font-medium mb-1">
+          每次显示字数 ({chunkSize})
+        </label>
+        <RangeSlider
           min={1}
           max={20}
-          className="px-2 py-1 border rounded w-20"
+          value={chunkSize}
+          onChange={onChunkSizeChange}
         />
       </div>
     </div>

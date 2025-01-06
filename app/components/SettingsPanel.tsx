@@ -88,7 +88,7 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
 
         <div className="preference-item">
           <label className="block text-sm font-medium mb-1">
-            字数浮动范围（{settings.flexibleRange}字）
+            字数浮动范围 ({settings.flexibleRange}字)
           </label>
           <RangeSlider
             min={1}
@@ -103,17 +103,45 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
         </div>
 
         <div className="preference-item">
-          <label className="block text-sm font-medium mb-1">字体大小</label>
-          <select 
-            value={settings.fontSize}
-            onChange={e => onUpdate({ fontSize: Number(e.target.value) })}
-            className="w-full p-2 border rounded"
-          >
-            <option value="24">24px</option>
-            <option value="32">32px</option>
-            <option value="40">40px</option>
-            <option value="48">48px</option>
-          </select>
+          <label className="block text-sm font-medium mb-1">
+            字体大小 ({settings.fontSize}px)
+          </label>
+          <RangeSlider
+            min={16}
+            max={56}
+            step={4}
+            value={Number(settings.fontSize)}
+            onChange={value => onUpdate({ fontSize: value })}
+          />
+        </div>
+
+        <div className="preference-item">
+          <label className="block text-sm font-medium mb-1">
+            文本区域宽度 ({settings.textAreaWidth}px)
+          </label>
+          <RangeSlider
+            min={400}
+            max={1200}
+            step={50}
+            value={settings.textAreaWidth}
+            onChange={value => onUpdate({ textAreaWidth: value })}
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            控制文本显示区域的宽度，文本会自动换行
+          </div>
+        </div>
+
+        <div className="preference-item">
+          <label className="block text-sm font-medium mb-1">
+            行间距 ({settings.lineSpacing}px)
+          </label>
+          <RangeSlider
+            min={8}
+            max={32}
+            step={4}
+            value={settings.lineSpacing}
+            onChange={value => onUpdate({ lineSpacing: value })}
+          />
         </div>
 
         <div className="preference-item border-t pt-4">
