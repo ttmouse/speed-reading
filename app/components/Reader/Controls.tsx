@@ -7,6 +7,9 @@ interface ControlsProps {
   onSettingChange: (updates: Partial<ReadingSettings>) => void;
 }
 
+// 统一的图标样式
+const getIconClass = (isActive: boolean) => `w-5 h-5 ${isActive ? 'stroke-white' : 'stroke-gray-700 dark:stroke-gray-300'}`;
+
 export function Controls({ settings, onSettingChange }: ControlsProps) {
   return (
     <div className="flex gap-4 items-center justify-center mb-4">
@@ -31,12 +34,13 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
           title={settings.readingMode === 'serial' ? '串行模式' : '高亮模式'}
         >
           {settings.readingMode === 'serial' ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+            <svg className={getIconClass(settings.readingMode === 'serial')} fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6h12M6 12h12M6 18h12" />
             </svg>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+            <svg className={getIconClass(settings.readingMode === 'serial')} fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
           )}
         </button>
@@ -56,12 +60,14 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
             title={settings.highlightStyle === 'scroll' ? '滚动式' : '分页式'}
           >
             {settings.highlightStyle === 'scroll' ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+              <svg className={getIconClass(settings.highlightStyle === 'page')} fill="none" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5h8a2 2 0 012 2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V7a2 2 0 012-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h8M8 13h6M8 17h4" />
               </svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 100 2h4a1 1 0 100-2H8zm5-4a1 1 0 100 2H8a1 1 0 100-2h5z" clipRule="evenodd" />
+              <svg className={getIconClass(settings.highlightStyle === 'page')} fill="none" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1M5 14h9M5 10h7M5 18h11" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 9l3 3m0 0l3-3m-3 3V4" />
               </svg>
             )}
           </button>
@@ -80,9 +86,8 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
           }`}
           title={settings.showProgress ? '隐藏进度' : '显示进度'}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-            <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+          <svg className={getIconClass(settings.showProgress)} fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </button>
         <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">
