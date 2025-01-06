@@ -5,6 +5,7 @@ import type { ReadingSettings, ReadingState } from '@/app/types';
 import dynamic from 'next/dynamic';
 import { PageView } from './PageView';
 import { ScrollView } from './ScrollView';
+import { THEME_COLORS, THEME_MODES } from '@/app/constants/themes';
 
 interface DisplayProps {
   settings: ReadingSettings;
@@ -38,9 +39,10 @@ function DisplayComponent({ settings, state, display }: DisplayProps) {
   }, []);
 
   // 基础容器样式
+  const themeColors = THEME_COLORS[settings.theme === 'LIGHT' ? 'light' : 'dark'];
   const containerStyle = {
-    color: settings.fontColor,
-    backgroundColor: settings.bgColor
+    color: themeColors.text,
+    backgroundColor: themeColors.background
   };
 
   // 如果还没有挂载，返回一个基础的显示
@@ -48,7 +50,7 @@ function DisplayComponent({ settings, state, display }: DisplayProps) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[300px]">
         <div 
-          className="w-full border rounded-lg overflow-hidden bg-white"
+          className="w-full border rounded-lg overflow-hidden"
           style={containerStyle}
         >
           <BaseDisplay text={display} fontSize={settings.fontSize} />
@@ -60,7 +62,7 @@ function DisplayComponent({ settings, state, display }: DisplayProps) {
   return (
     <div className="flex-1 flex items-center justify-center min-h-[300px]">
       <div 
-        className="w-full border rounded-lg overflow-hidden bg-white"
+        className="w-full border rounded-lg overflow-hidden"
         style={containerStyle}
       >
         {settings.readingMode === 'highlight' ? (
@@ -68,14 +70,31 @@ function DisplayComponent({ settings, state, display }: DisplayProps) {
             <PageView
               text={state.text}
               chunks={state.chunks}
-              settings={settings}
+              settings={{
+                chunkSize: settings.chunkSize,
+                textAreaWidth: settings.textAreaWidth,
+                fontSize: settings.fontSize,
+                lineSpacing: settings.lineSpacing,
+                pageSize: settings.pageSize,
+                dimmedTextColor: themeColors.dimmed,
+                fontColor: themeColors.text,
+                hideEndPunctuation: settings.hideEndPunctuation
+              }}
               currentPosition={state.currentPosition}
             />
           ) : (
             <ScrollView
               text={state.text}
               chunks={state.chunks}
-              settings={settings}
+              settings={{
+                chunkSize: settings.chunkSize,
+                fontSize: settings.fontSize,
+                lineSpacing: settings.lineSpacing,
+                contextLines: settings.contextLines,
+                dimmedTextColor: themeColors.dimmed,
+                fontColor: themeColors.text,
+                hideEndPunctuation: settings.hideEndPunctuation
+              }}
               currentPosition={state.currentPosition}
             />
           )

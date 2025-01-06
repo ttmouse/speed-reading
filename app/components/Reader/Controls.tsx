@@ -1,5 +1,6 @@
 import React from 'react';
 import { ReadingMode, ReadingSettings, HighlightStyle } from '../../types';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface ControlsProps {
   settings: ReadingSettings;
@@ -9,12 +10,23 @@ interface ControlsProps {
 export function Controls({ settings, onSettingChange }: ControlsProps) {
   return (
     <div className="flex gap-4 items-center justify-center mb-4">
+      {/* 主题切换 */}
+      <div className="flex flex-col items-center">
+        <ThemeToggle
+          currentTheme={settings.theme}
+          onThemeChange={theme => onSettingChange({ theme })}
+        />
+        <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">
+          {settings.theme === 'DARK' ? '深色模式' : '浅色模式'}
+        </span>
+      </div>
+
       {/* 阅读模式切换 */}
       <div className="flex flex-col items-center">
         <button
           onClick={() => onSettingChange({ readingMode: settings.readingMode === 'serial' ? 'highlight' : 'serial' })}
-          className={`p-2 rounded-lg transition-colors ${
-            settings.readingMode === 'serial' ? 'bg-gray-900 text-white' : 'bg-gray-200'
+          className={`p-2 rounded-lg transition-all transform active:scale-95 ${
+            settings.readingMode === 'serial' ? 'bg-gray-900 text-white' : 'bg-gray-200 dark:bg-gray-700'
           }`}
           title={settings.readingMode === 'serial' ? '串行模式' : '高亮模式'}
         >
@@ -28,7 +40,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
             </svg>
           )}
         </button>
-        <span className="text-xs mt-1 text-gray-500">
+        <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">
           {settings.readingMode === 'serial' ? '串行模式' : '高亮模式'}
         </span>
       </div>
@@ -38,8 +50,8 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
         <div className="flex flex-col items-center">
           <button
             onClick={() => onSettingChange({ highlightStyle: settings.highlightStyle === 'scroll' ? 'page' : 'scroll' })}
-            className={`p-2 rounded-lg transition-colors ${
-              settings.highlightStyle === 'page' ? 'bg-gray-900 text-white' : 'bg-gray-200'
+            className={`p-2 rounded-lg transition-all transform active:scale-95 ${
+              settings.highlightStyle === 'page' ? 'bg-gray-900 text-white' : 'bg-gray-200 dark:bg-gray-700'
             }`}
             title={settings.highlightStyle === 'scroll' ? '滚动式' : '分页式'}
           >
@@ -53,7 +65,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
               </svg>
             )}
           </button>
-          <span className="text-xs mt-1 text-gray-500">
+          <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">
             {settings.highlightStyle === 'scroll' ? '滚动式' : '分页式'}
           </span>
         </div>
@@ -63,8 +75,8 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
       <div className="flex flex-col items-center">
         <button
           onClick={() => onSettingChange({ showProgress: !settings.showProgress })}
-          className={`p-2 rounded-lg transition-colors ${
-            settings.showProgress ? 'bg-gray-900 text-white' : 'bg-gray-200'
+          className={`p-2 rounded-lg transition-all transform active:scale-95 ${
+            settings.showProgress ? 'bg-gray-900 text-white' : 'bg-gray-200 dark:bg-gray-700'
           }`}
           title={settings.showProgress ? '隐藏进度' : '显示进度'}
         >
@@ -73,7 +85,7 @@ export function Controls({ settings, onSettingChange }: ControlsProps) {
             <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
           </svg>
         </button>
-        <span className="text-xs mt-1 text-gray-500">
+        <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">
           {settings.showProgress ? '隐藏进度' : '显示进度'}
         </span>
       </div>

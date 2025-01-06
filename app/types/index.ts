@@ -1,3 +1,5 @@
+import { ThemeMode } from '../constants/themes';
+
 // 阅读模式
 export type ReadingMode = 'serial' | 'highlight';
 
@@ -11,6 +13,17 @@ export interface ReadingSettings {
   highlightStyle: HighlightStyle;
   speed: number;
   chunkSize: number;
+  
+  // 主题设置
+  theme: ThemeMode;
+  
+  // 显示设置
+  fontSize: number;
+  lineSpacing: number;
+  textAreaWidth: number;
+  pageSize: number;
+  dimmedTextColor: string;
+  contextLines: number;
   
   // 分词设置
   sentenceBreak: boolean;

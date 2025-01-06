@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ReadingSettings } from '../types';
 import { DEFAULT_SETTINGS } from '../constants/readerSettings';
 import { RangeSlider } from './common/RangeSlider';
+import { ThemeSettings } from './Settings/ThemeSettings';
 
 interface SettingsPanelProps {
   settings: ReadingSettings;
@@ -117,22 +118,9 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
         </div>
 
         <div className="preference-item">
-          <label className="block text-sm font-medium mb-1">字体颜色</label>
-          <input 
-            type="color"
-            value={settings.fontColor}
-            onChange={e => onUpdate({ fontColor: e.target.value })}
-            className="w-full p-1 border rounded"
-          />
-        </div>
-
-        <div className="preference-item">
-          <label className="block text-sm font-medium mb-1">背景颜色</label>
-          <input 
-            type="color"
-            value={settings.bgColor}
-            onChange={e => onUpdate({ bgColor: e.target.value })}
-            className="w-full p-1 border rounded"
+          <ThemeSettings
+            currentTheme={settings.theme}
+            onThemeChange={theme => onUpdate({ theme })}
           />
         </div>
 
@@ -204,18 +192,6 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
                   </div>
                 </>
               )}
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  背景文本颜色
-                </label>
-                <input
-                  type="color"
-                  value={settings.dimmedTextColor}
-                  onChange={e => onUpdate({ dimmedTextColor: e.target.value })}
-                  className="w-full h-8"
-                />
-              </div>
             </div>
           )}
         </div>
