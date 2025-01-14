@@ -235,6 +235,20 @@ const SettingsPanel = ({ settings, onUpdate }: SettingsPanelProps) => {
               />
               <label className="text-sm text-gray-600">显示分词预览</label>
             </div>
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={Boolean(settings.highlightSingleChunk)}
+                onChange={(e) => {
+                  const value = e.target.checked;
+                  console.log('Checkbox changed:', value);
+                  onUpdate({ highlightSingleChunk: value });
+                }}
+                className="toggle mr-2"
+              />
+              <label className="text-sm text-gray-600">仅高亮当前分组文字</label>
+            </div>
           </div>
         </div>
       </div>

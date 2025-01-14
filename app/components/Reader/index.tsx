@@ -79,7 +79,7 @@ export default function Reader(): JSX.Element {
             <ProgressBar 
               progress={state.currentPosition / Math.max(1, state.chunks.length - 1)}
               onProgressChange={(progress) => setCurrentPosition(Math.floor(progress * state.chunks.length))}
-              isPaused={!isPlaying}
+              isPaused={state.isPaused}
             />
           )}
 

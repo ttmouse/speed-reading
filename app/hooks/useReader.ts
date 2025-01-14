@@ -20,7 +20,7 @@ import { useTextProcessor } from '@/app/hooks/useTextProcessor';
 import { useReadingStats } from '@/app/hooks/useReadingStats';
 import { useKeyboardControls } from '@/app/hooks/useKeyboardControls';
 import { useReadingTimer } from '@/app/hooks/useReadingTimer';
-import { splitTextIntoChunks, isBreakPoint, getSpeedFactor } from '../utils/textProcessor';
+import { isBreakPoint, getSpeedFactor } from '../utils/textProcessor';
 import { loadSettings, saveSettings } from '../utils/storage';
 import { chunkText } from '../utils/textChunker';
 
@@ -76,15 +76,16 @@ function createStateUpdater(setState: React.Dispatch<React.SetStateAction<Readin
 }
 
 export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderReturn {
-  const [settings, setSettings] = useState<ReadingSettings>(() => loadSettings());
+  const [mounted, setMounted] = useState(false);
+  const [settings, setSettings] = useState<ReadingSettings>(() => DEFAULT_SETTINGS);
   const [state, setState] = useState<ReadingState>(() => {
     const initialChunks = chunkText(DEFAULT_TEXT, {
-      chunkSize: settings.chunkSize,
-      sentenceBreak: settings.sentenceBreak,
-      flexibleRange: settings.flexibleRange,
-      hideEndPunctuation: settings.hideEndPunctuation,
-      readingMode: settings.readingMode,
-      highlightStyle: settings.highlightStyle
+      chunkSize: DEFAULT_SETTINGS.chunkSize,
+      sentenceBreak: DEFAULT_SETTINGS.sentenceBreak,
+      flexibleRange: DEFAULT_SETTINGS.flexibleRange,
+      hideEndPunctuation: DEFAULT_SETTINGS.hideEndPunctuation,
+      readingMode: DEFAULT_SETTINGS.readingMode,
+      highlightStyle: DEFAULT_SETTINGS.highlightStyle
     });
     
     return {
@@ -97,6 +98,32 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       progress: 0
     };
   });
+
+  // 在客户端加载设置
+  useEffect(() => {
+    if (!mounted) {
+      const savedSettings = loadSettings();
+      console.log('Loading saved settings:', savedSettings);
+      setSettings(savedSettings);
+      setMounted(true);
+
+      // 使用新的设置重新分词
+      const newChunks = chunkText(state.text, {
+        chunkSize: savedSettings.chunkSize,
+        sentenceBreak: savedSettings.sentenceBreak,
+        flexibleRange: savedSettings.flexibleRange,
+        hideEndPunctuation: savedSettings.hideEndPunctuation,
+        readingMode: savedSettings.readingMode,
+        highlightStyle: savedSettings.highlightStyle
+      });
+
+      setState(prev => ({
+        ...prev,
+        chunks: newChunks,
+        display: newChunks[0] || '准备开始'
+      }));
+    }
+  }, [mounted, state.text]);
 
   const stateUpdater = useMemo(() => createStateUpdater(setState), []);
 
@@ -145,8 +172,12 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
       }
 
       const newPosition = prev.currentPosition + 1;
-      stateUpdater.updatePosition(newPosition);
-      return prev;
+      return {
+        ...prev,
+        currentPosition: newPosition,
+        progress: prev.chunks.length ? newPosition / prev.chunks.length : 0,
+        display: prev.chunks[newPosition] || '完成'
+      };
     });
     updateStats();
   }, [updateStats, timerRef, stateUpdater]);
@@ -154,7 +185,14 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
   const startReading = useCallback(() => {
     if (!state.text) return;
     
-    const chunks = state.chunks.length > 0 ? state.chunks : splitIntoChunks(state.text, settings.chunkSize);
+    const chunks = state.chunks.length > 0 ? state.chunks : chunkText(state.text, {
+      chunkSize: settings.chunkSize,
+      sentenceBreak: settings.sentenceBreak,
+      flexibleRange: settings.flexibleRange,
+      hideEndPunctuation: settings.hideEndPunctuation,
+      readingMode: settings.readingMode,
+      highlightStyle: settings.highlightStyle
+    });
     const now = Date.now();
     startTimeRef.current = now;
     setState(prev => ({ 
@@ -204,14 +242,14 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     };
 
     return unsubscribe;
-  }, [settings, state.text, state.chunks, state.currentPosition, splitIntoChunks, showNextChunk, timerRef, startTimeRef]);
+  }, [settings, state.text, state.chunks, state.currentPosition, chunkText, showNextChunk, timerRef, startTimeRef]);
 
   const pauseReading = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-    setState(prev => ({ ...prev, isPlaying: false, isPaused: true }));
-  }, [timerRef]);
+    stateUpdater.updatePlayState(false, true);
+  }, [timerRef, stateUpdater]);
 
   const resetAll = useCallback(() => {
     if (timerRef.current) {
@@ -295,8 +333,24 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
   }, [state.isPlaying, state.text, state.currentPosition, settings]);
 
   const updateSettings = useCallback((updates: Partial<ReadingSettings>) => {
+    console.log('Updating settings:', updates);
+    
+    // 使用函数式更新来确保我们总是使用最新的状态
     setSettings(prev => {
+      // 检查是否有实际的更新
+      const hasChanges = Object.entries(updates).some(
+        ([key, value]) => prev[key as keyof ReadingSettings] !== value
+      );
+
+      if (!hasChanges) {
+        console.log('No changes in settings, skipping update');
+        return prev;
+      }
+
       const newSettings = { ...prev, ...updates };
+      console.log('New settings:', newSettings);
+      
+      // 保存到 localStorage
       saveSettings(newSettings);
 
       // 如果更新了分词相关的设置，重新分词
@@ -329,8 +383,15 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
 
   const processText = useCallback((text: string) => {
     if (!text) return [];
-    return splitTextIntoChunks(text, settings.chunkSize);
-  }, [settings.chunkSize]);
+    return chunkText(text, {
+      chunkSize: settings.chunkSize,
+      sentenceBreak: settings.sentenceBreak,
+      flexibleRange: settings.flexibleRange,
+      hideEndPunctuation: settings.hideEndPunctuation,
+      readingMode: settings.readingMode,
+      highlightStyle: settings.highlightStyle
+    });
+  }, [settings]);
 
   // 使用键盘控制 hook
   const { handleKeyDown } = useKeyboardControls({
@@ -369,13 +430,7 @@ export function useReader({ onSettingsClick }: UseReaderProps = {}): UseReaderRe
     handleTextChange,
     handleSpeedChange,
     handleChunkSizeChange,
-    updateSettings: (updates: Partial<ReadingSettings>) => {
-      setSettings(prev => {
-        const newSettings = { ...prev, ...updates };
-        saveSettings(newSettings);
-        return newSettings;
-      });
-    },
+    updateSettings,
     startReading,
     pauseReading,
     resetReading,

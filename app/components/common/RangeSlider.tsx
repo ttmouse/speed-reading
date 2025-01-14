@@ -52,38 +52,44 @@ export function RangeSlider({ min, max, step = 1, value, onChange }: RangeSlider
   return (
     <div 
       ref={sliderRef}
-      className="w-full h-8 flex items-center cursor-pointer relative"
-      onMouseDown={(e) => {
+      className="relative w-full h-6 flex items-center"
+      onMouseDown={(e: React.MouseEvent) => {
+        if (e.button === 0) {
+          setIsDragging(true);
+          handleDrag(e.nativeEvent);
+        }
+      }}
+      onTouchStart={(e: React.TouchEvent) => {
         setIsDragging(true);
         handleDrag(e.nativeEvent);
       }}
-      onTouchStart={(e) => {
-        setIsDragging(true);
-        handleDrag(e.nativeEvent);
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="w-full h-[1px] bg-gray-200 rounded-full">
+      <div 
+        className="absolute w-full h-1 bg-gray-200 rounded-full overflow-hidden"
+        style={{ 
+          cursor: 'pointer',
+          opacity: isDragging || isHovered ? 1 : 0.7,
+          transition: 'opacity 0.2s ease-in-out'
+        }}
+      >
         <div
-          className="absolute top-1/2 -translate-y-1/2 left-0 h-[1px] bg-gray-600"
+          className="h-full bg-blue-500 rounded-full"
           style={{ width: `${progress}%` }}
         />
       </div>
-      <div 
-        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
-        style={{ left: `${progress}%` }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div 
-          className={`w-3.5 h-3.5 rounded-full border bg-white border-gray-600 ${
-            isHovered ? 'shadow-md scale-110' : ''
-          }`}
-          style={{
-            transform: isHovered ? 'scale(1.1)' : 'scale(1)',
-            transition: 'transform 0.2s'
-          }}
-        />
-      </div>
+      <div
+        className={`absolute w-4 h-4 rounded-full bg-blue-500 shadow transform -translate-x-1/2 hover:scale-110 transition-transform ${
+          isDragging ? 'scale-110' : ''
+        }`}
+        style={{
+          left: `${progress}%`,
+          cursor: 'pointer',
+          opacity: isDragging || isHovered ? 1 : 0.7,
+          transition: 'opacity 0.2s ease-in-out, transform 0.2s ease-in-out'
+        }}
+      />
     </div>
   );
 } 

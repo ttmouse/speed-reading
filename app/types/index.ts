@@ -18,6 +18,7 @@ export interface ReadingSettings {
   
   // 主题设置
   theme: ThemeMode;
+  fontColor: string;  // 新增：字体颜色
   
   // 显示设置
   fontSize: number;
@@ -26,6 +27,7 @@ export interface ReadingSettings {
   pageSize: number;
   dimmedTextColor: string;
   contextLines: number;
+  highlightSingleChunk: boolean;  // 新增：是否仅高亮当前分组
   
   // 分词设置
   sentenceBreak: boolean;

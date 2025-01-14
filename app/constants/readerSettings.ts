@@ -95,6 +95,10 @@ export const SETTING_METADATA = {
     category: SETTING_CATEGORIES.DISPLAY,
     default: 2
   },
+  highlightSingleChunk: {
+    category: SETTING_CATEGORIES.DISPLAY,
+    default: false
+  },
   theme: {
     category: SETTING_CATEGORIES.DISPLAY,
     default: THEME_MODES.LIGHT as ThemeMode
@@ -123,6 +127,9 @@ export const DEFAULT_SETTINGS: ReadingSettings = {
   dimmedTextColor: SETTING_METADATA.dimmedTextColor.default,
   contextLines: SETTING_METADATA.contextLines.default,
   theme: SETTING_METADATA.theme.default,
+  highlightSingleChunk: SETTING_METADATA.highlightSingleChunk.default,
+  fontColor: '#000000',
+  displayMode: 'serial' as const
 };
 
 type SettingMetadataType = typeof SETTING_METADATA;
